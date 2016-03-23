@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм» [![Build status][travis-image]][travis-url] [![Dependency status][dependency-image]][dependency-url]
 
 * Студент: [Анастасия Козенко](https://up.htmlacademy.ru/javascript/4/user/171084).
-* Наставник: `Неизвестно`.
+* Наставник: [Дмитрий Безверхий](https://htmlacademy.ru/profile/id128989)
 
 ---
 

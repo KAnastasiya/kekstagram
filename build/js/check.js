@@ -1,3 +1,4 @@
+'use strict';
 function getMessage(a, b) {
   var message = '';
   if (typeof (a) === 'boolean') {

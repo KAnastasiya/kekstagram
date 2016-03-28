@@ -115,10 +115,34 @@
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
       this._ctx.strokeRect(
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2);
+          (-this._resizeConstraint.side / 2),
+          (-this._resizeConstraint.side / 2),
+          this._resizeConstraint.side,
+          this._resizeConstraint.side);
+
+      // Затемнение области вокруг прямоугольника, обозначающего область
+      // изображения после кадрирования
+      var strokeWidth = this._ctx.lineWidth;
+
+      this._ctx.strokeStyle = '#000';
+      this._ctx.globalAlpha = 0.8;
+      this._ctx.setLineDash([]);
+      this._ctx.lineWidth = this._container.width - this._resizeConstraint.side - strokeWidth;
+      this._ctx.strokeRect(
+        -this._container.width / 2,
+        -this._container.height / 2,
+        this._container.width,
+        this._container.height);
+
+      // Отображение размеров кадрируемого изображения
+      this._ctx.font = '22px Arial';
+      this._ctx.fillStyle = '#fff';
+      this._ctx.textAlign = 'center';
+      this._ctx.textBaseline = 'bottom';
+      this._ctx.fillText(
+          this._image.naturalWidth + ' x ' + this._image.naturalHeight,
+          0,
+          -this._resizeConstraint.side / 2 - strokeWidth * 1.5);
 
       // Восстановление состояния канваса, которое было до вызова ctx.save
       // и последующего изменения системы координат. Нужно для того, чтобы

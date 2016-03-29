@@ -123,19 +123,14 @@
       this._ctx.fillStyle = this._ctx.strokeStyle;
 
       function circleStroke(context, x, y) {
-        context.beginPath();
         for (coordinate = -strokeSizeHalf; coordinate < strokeSizeHalf; coordinate += radius * 5) {
+          context.beginPath();
           context.arc(coordinate, y, radius, startAngle, endAngle);
-        }
-        context.closePath();
-        context.fill();
-
-        context.beginPath();
-        for (coordinate = -strokeSizeHalf; coordinate < strokeSizeHalf; coordinate += radius * 5) {
+          context.fill();
+          context.beginPath();
           context.arc(x, coordinate, radius, startAngle, endAngle);
+          context.fill();
         }
-        context.closePath();
-        context.fill();
       }
 
       circleStroke(this._ctx, -strokeSizeHalf, -strokeSizeHalf);

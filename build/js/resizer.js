@@ -123,57 +123,57 @@
       /**
        * [crankleStroke - Отрисовка прямоугольника, обозначающего область
        * изображения после кадрирования. Координаты задаются от центра]
-       * @param  {[Object]} context       [Контекст канваса]
-       * @param  {[Number]} framePosition [Расположение рамки относительно
-       *                                  центра канваса: 1 (справа), -1 (слева)]
+       * @param  {Object} context       [Контекст канваса]
+       * @param  {Number} framePosition [Расположение рамки относительно
+       *                                 центра канваса: 1 (справа), -1 (слева)]
        */
       function crankleStroke(context, framePosition) {
         var strokeSizeHalf = strokeSize / 2,
           /**
-           * [lineCount - Число отрезков, из которых состоит одна сторона рамки]
+           * [LINE_COUNT - Число отрезков, из которых состоит одна сторона рамки]
            * @type {Number}
            */
-          lineCount = 32,
+          LINE_COUNT = 32,
           /**
            * [lineSize - Длина одного отрезка рамки]
-           * @type {[Number]}
+           * @type {Number}
            */
-          lineSize = strokeSize / lineCount;
+          lineSize = strokeSize / LINE_COUNT;
 
         context.fillStyle = context.strokeStyle;
         context.setLineDash([]);
         context.lineCap = 'square';
 
-        for (var i = 0; i < lineCount; i += 2) {
+        for (var i = 0; i < LINE_COUNT; i += 2) {
           /**
            * [basicPointStaticAxis - Начальная и конечная точка каждого кусочка
            * рамки ("зигзага")" по оси Y для горизонтальной рамки и оси X для
            * вертикальной рамки)]
-           * @type {[Number]}
+           * @type {Number}
            */
           var basicPointStaticAxis = framePosition * (strokeSizeHalf - lineSize),
             /**
              * [addiionalPointStaticAxis - Точка "провала" каждого зигзага рамки
              * по оси Y для горизонтальной рамки и оси X для вертикальной рамки)]
-             * @type {[Number]}
+             * @type {Number}
              */
             addiionalPointStaticAxis = framePosition * strokeSizeHalf,
             /**
              * [startPointDynamicAxis - Начальная точка каждого участка рамки
              * по оси Y для вертикальной рамки и оси X для горизонтальной рамки)]
-             * @type {[Number]}
+             * @type {Number}
              */
             startPointDynamicAxis = -strokeSizeHalf + lineSize * i,
             /**
              * [additionalPointDynamicAxis - Точка "провала" каждого зигзага рамки
              * по оси Y для вертикальной рамки и оси X для горизонтальной рамки)]
-             * @type {[Number]}
+             * @type {Number}
              */
             additionalPointDynamicAxis = -strokeSizeHalf + lineSize + lineSize * i,
             /**
              * [endPointDynamicAxis - Конечная точка каждого зигзага рамки по оси
              * Y для вертикальной рамки и оси X для горизонтальной рамки)]
-             * @type {[Number]}
+             * @type {Number}
              */
             endPointDynamicAxis = -strokeSizeHalf + 2 * lineSize + lineSize * i;
 

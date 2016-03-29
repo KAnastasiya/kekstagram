@@ -107,47 +107,100 @@
 
       var displX = -(this._resizeConstraint.x + this._resizeConstraint.side / 2);
       var displY = -(this._resizeConstraint.y + this._resizeConstraint.side / 2);
+
       // Отрисовка изображения на холсте. Параметры задают изображение, которое
       // нужно отрисовать и координаты его верхнего левого угла.
       // Координаты задаются от центра холста.
       this._ctx.drawImage(this._image, displX, displY);
 
-      // Отрисовка прямоугольника, обозначающего область изображения после
-      // кадрирования. Координаты задаются от центра.
-      var strokeWidth = this._ctx.lineWidth,
-        strokeSize = this._resizeConstraint.side,
-        strokeSizeHalf = strokeSize / 2,
-        lineSize = 15,
-        lineCount = strokeSizeHalf * 2 / lineSize,
-        i;
+      /**
+       * [strokeSize - Размер одной стороны прямоугольника, обозначающего
+       * область изображения после кадрирования (рамки)]
+       * @type {Number}
+       */
+      var strokeSize = this._resizeConstraint.side;
 
-      this._ctx.setLineDash([]);
-      this._ctx.fillStyle = this._ctx.strokeStyle;
-      this._ctx.lineCap = 'square';
+      /**
+       * [crankleStroke - Отрисовка прямоугольника, обозначающего область
+       * изображения после кадрирования. Координаты задаются от центра]
+       * @param  {[Object]} context       [Контекст канваса]
+       * @param  {[Number]} framePosition [Расположение рамки относительно
+       *                                  центра канваса: 1 (справа), -1 (слева)]
+       */
+      function crankleStroke(context, framePosition) {
+        var strokeSizeHalf = strokeSize / 2,
+          /**
+           * [lineCount - Число отрезков, из которых состоит одна сторона рамки]
+           * @type {Number}
+           */
+          lineCount = 32,
+          /**
+           * [lineSize - Длина одного отрезка рамки]
+           * @type {[Number]}
+           */
+          lineSize = strokeSize / lineCount;
 
-      function crankleStroke(context, quarterX, quarterY) {
-        for (i = 1; i < lineCount - 1; i += 2) {
+        context.fillStyle = context.strokeStyle;
+        context.setLineDash([]);
+        context.lineCap = 'square';
+
+        for (var i = 0; i < lineCount; i += 2) {
+          /**
+           * [basicPointStaticAxis - Начальная и конечная точка каждого кусочка
+           * рамки ("зигзага")" по оси Y для горизонтальной рамки и оси X для
+           * вертикальной рамки)]
+           * @type {[Number]}
+           */
+          var basicPointStaticAxis = framePosition * (strokeSizeHalf - lineSize),
+            /**
+             * [addiionalPointStaticAxis - Точка "провала" каждого зигзага рамки
+             * по оси Y для горизонтальной рамки и оси X для вертикальной рамки)]
+             * @type {[Number]}
+             */
+            addiionalPointStaticAxis = framePosition * strokeSizeHalf,
+            /**
+             * [startPointDynamicAxis - Начальная точка каждого участка рамки
+             * по оси Y для вертикальной рамки и оси X для горизонтальной рамки)]
+             * @type {[Number]}
+             */
+            startPointDynamicAxis = -strokeSizeHalf + lineSize * i,
+            /**
+             * [additionalPointDynamicAxis - Точка "провала" каждого зигзага рамки
+             * по оси Y для вертикальной рамки и оси X для горизонтальной рамки)]
+             * @type {[Number]}
+             */
+            additionalPointDynamicAxis = -strokeSizeHalf + lineSize + lineSize * i,
+            /**
+             * [endPointDynamicAxis - Конечная точка каждого зигзага рамки по оси
+             * Y для вертикальной рамки и оси X для горизонтальной рамки)]
+             * @type {[Number]}
+             */
+            endPointDynamicAxis = -strokeSizeHalf + 2 * lineSize + lineSize * i;
+
+          // Отрисовка горизонтальной рамки
           context.beginPath();
-          context.moveTo(-strokeSizeHalf + lineSize * i, quarterY * strokeSizeHalf);
-          context.lineTo(-strokeSizeHalf + lineSize + lineSize * i, quarterY * (strokeSizeHalf - lineSize));
-          context.lineTo( -strokeSizeHalf + 2 * lineSize + lineSize * i, quarterY * strokeSizeHalf);
+          context.moveTo(startPointDynamicAxis, basicPointStaticAxis);
+          context.lineTo(additionalPointDynamicAxis, addiionalPointStaticAxis);
+          context.lineTo(endPointDynamicAxis, basicPointStaticAxis);
           context.stroke();
-        }
 
-        for (i = 0; i < lineCount; i += 2) {
+          // Отрисовка вертикальной рамки
           context.beginPath();
-          context.moveTo(quarterX * (strokeSizeHalf - lineSize), -strokeSizeHalf + lineSize * i);
-          context.lineTo(quarterX * strokeSizeHalf, -strokeSizeHalf + lineSize + lineSize * i);
-          context.lineTo(quarterX * (strokeSizeHalf - lineSize), -strokeSizeHalf + 2 * lineSize + lineSize * i);
+          context.moveTo(basicPointStaticAxis, startPointDynamicAxis);
+          context.lineTo(addiionalPointStaticAxis, additionalPointDynamicAxis);
+          context.lineTo(basicPointStaticAxis, endPointDynamicAxis);
           context.stroke();
         }
       }
 
-      crankleStroke(this._ctx, 1, 1);
-      crankleStroke(this._ctx, -1, -1);
+      // Вызов функции отрисовки рамки вокруг кадрируемого изображения
+      crankleStroke(this._ctx, 1);
+      crankleStroke(this._ctx, -1);
 
       // Затемнение области вокруг прямоугольника, обозначающего область
       // изображения после кадрирования
+      var strokeWidth = this._ctx.lineWidth;
+
       this._ctx.strokeStyle = '#000';
       this._ctx.globalAlpha = 0.8;
       this._ctx.setLineDash([]);

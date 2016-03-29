@@ -114,32 +114,40 @@
 
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
-      var radius = 3,
-        startAngle = 0,
-        endAngle = 2 * Math.PI,
-        strokeSizeHalf = this._resizeConstraint.side / 2,
-        coordinate;
+      var strokeWidth = this._ctx.lineWidth,
+        strokeSize = this._resizeConstraint.side,
+        strokeSizeHalf = strokeSize / 2,
+        lineSize = 15,
+        lineCount = strokeSizeHalf * 2 / lineSize,
+        i;
 
+      this._ctx.setLineDash([]);
       this._ctx.fillStyle = this._ctx.strokeStyle;
+      this._ctx.lineCap = 'square';
 
-      function circleStroke(context, x, y) {
-        for (coordinate = -strokeSizeHalf; coordinate < strokeSizeHalf; coordinate += radius * 5) {
+      function crankleStroke(context, quarterX, quarterY) {
+        for (i = 1; i < lineCount - 1; i += 2) {
           context.beginPath();
-          context.arc(coordinate, y, radius, startAngle, endAngle);
-          context.fill();
+          context.moveTo(-strokeSizeHalf + lineSize * i, quarterY * strokeSizeHalf);
+          context.lineTo(-strokeSizeHalf + lineSize + lineSize * i, quarterY * (strokeSizeHalf - lineSize));
+          context.lineTo( -strokeSizeHalf + 2 * lineSize + lineSize * i, quarterY * strokeSizeHalf);
+          context.stroke();
+        }
+
+        for (i = 0; i < lineCount; i += 2) {
           context.beginPath();
-          context.arc(x, coordinate, radius, startAngle, endAngle);
-          context.fill();
+          context.moveTo(quarterX * (strokeSizeHalf - lineSize), -strokeSizeHalf + lineSize * i);
+          context.lineTo(quarterX * strokeSizeHalf, -strokeSizeHalf + lineSize + lineSize * i);
+          context.lineTo(quarterX * (strokeSizeHalf - lineSize), -strokeSizeHalf + 2 * lineSize + lineSize * i);
+          context.stroke();
         }
       }
 
-      circleStroke(this._ctx, -strokeSizeHalf, -strokeSizeHalf);
-      circleStroke(this._ctx, strokeSizeHalf, strokeSizeHalf);
+      crankleStroke(this._ctx, 1, 1);
+      crankleStroke(this._ctx, -1, -1);
 
       // Затемнение области вокруг прямоугольника, обозначающего область
       // изображения после кадрирования
-      var strokeWidth = this._ctx.lineWidth;
-
       this._ctx.strokeStyle = '#000';
       this._ctx.globalAlpha = 0.8;
       this._ctx.setLineDash([]);

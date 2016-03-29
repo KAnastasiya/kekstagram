@@ -114,11 +114,32 @@
 
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
-      this._ctx.strokeRect(
-          (-this._resizeConstraint.side / 2),
-          (-this._resizeConstraint.side / 2),
-          this._resizeConstraint.side,
-          this._resizeConstraint.side);
+      var radius = 3,
+        startAngle = 0,
+        endAngle = 2 * Math.PI,
+        strokeSizeHalf = this._resizeConstraint.side / 2,
+        coordinate;
+
+      this._ctx.fillStyle = this._ctx.strokeStyle;
+
+      function circleStroke(context, x, y) {
+        context.beginPath();
+        for (coordinate = -strokeSizeHalf; coordinate < strokeSizeHalf; coordinate += radius * 5) {
+          context.arc(coordinate, y, radius, startAngle, endAngle);
+        }
+        context.closePath();
+        context.fill();
+
+        context.beginPath();
+        for (coordinate = -strokeSizeHalf; coordinate < strokeSizeHalf; coordinate += radius * 5) {
+          context.arc(x, coordinate, radius, startAngle, endAngle);
+        }
+        context.closePath();
+        context.fill();
+      }
+
+      circleStroke(this._ctx, -strokeSizeHalf, -strokeSizeHalf);
+      circleStroke(this._ctx, strokeSizeHalf, strokeSizeHalf);
 
       // Затемнение области вокруг прямоугольника, обозначающего область
       // изображения после кадрирования

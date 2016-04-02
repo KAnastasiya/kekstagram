@@ -335,9 +335,6 @@ var browserCookies = require('browser-cookies');
     expireDate = new Date(expireDateMillisecond);
     expireDate.setHours(23, 59, 59, 999);
 
-    console.log('currentDate' + currentDate);
-    console.log('expireDate' + expireDate);
-
     return expireDate;
   }
 
@@ -348,8 +345,6 @@ var browserCookies = require('browser-cookies');
    */
   filterForm.onsubmit = function(evt) {
     evt.preventDefault();
-
-    console.log('getFilterExpireDate' + getFilterExpireDate().toString());
 
     browserCookies.set('filter', selectedFilter, {
       expires: getFilterExpireDate().toString()

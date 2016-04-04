@@ -42,6 +42,15 @@
   var currentResizer;
 
   /**
+   * Обращение к элементам формы кадрирования
+   * @type {String}
+   */
+  var resizeLeft = document.querySelector('#resize-x'),
+    resizeTop = document.querySelector('#resize-y'),
+    resizeSide = document.querySelector('#resize-size'),
+    resizeSubmitButton = document.querySelector('#resize-fwd');
+
+  /**
    * Удаляет текущий объект {@link Resizer}, чтобы создать новый с другим
    * изображением.
    */
@@ -72,7 +81,20 @@
    * @return {boolean}
    */
   function resizeFormIsValid() {
-    return true;
+    var maxWidth = currentResizer._image.naturalWidth,
+      maxHeight = currentResizer._image.naturalHeight,
+      resizeLeftValue = +resizeLeft.value,
+      resizeTopValue = +resizeTop.value,
+      resizeSideValue = +resizeSide.value;
+
+    return (resizeLeft.validity.valid
+            && resizeTop.validity.valid
+            && resizeSide.validity.valid
+            && resizeTopValue >= 0
+            && resizeLeftValue >= 0
+            && resizeSideValue >= 0
+            && resizeLeftValue + +resizeSideValue <= maxWidth
+            && resizeTopValue + +resizeSideValue <= maxHeight) ? true : false;
   }
 
   /**
@@ -119,6 +141,11 @@
       case Action.ERROR:
         isError = true;
         message = message || 'Неподдерживаемый формат файла<br> <a href="' + document.location + '">Попробовать еще раз</a>.';
+        break;
+
+      case Action.CUSTOM:
+        isError = true;
+        message = message || 'Неверное значение поля';
         break;
     }
 
@@ -172,6 +199,33 @@
   };
 
   /**
+   * Обработка ошибок заполнения полей формы кадрирования
+   */
+  resizeForm.oninput = function resizeOnInput() {
+    var maxWidth = currentResizer._image.naturalWidth,
+      maxHeight = currentResizer._image.naturalHeight,
+      resizeLeftValue = +resizeLeft.value,
+      resizeTopValue = +resizeTop.value,
+      resizeSideValue = +resizeSide.value,
+      errorMessage = '';
+
+    if (resizeFormIsValid()) {
+      resizeSubmitButton.disabled = false;
+      hideMessage();
+    } else {
+      resizeSubmitButton.disabled = true;
+
+      if (resizeLeftValue < 0 || resizeTopValue < 0 || resizeSideValue < 0) {
+        errorMessage = 'Значение поля должно быть положительный';
+      } else if (resizeLeftValue + resizeSideValue >= maxWidth
+                || resizeTopValue + resizeSideValue >= maxHeight) {
+        errorMessage = 'Кадрированное изображение должно находиться в пределах исходного изображения';
+      }
+      showMessage(Action.CUSTOM, errorMessage);
+    }
+  };
+
+  /**
    * Обработка сброса формы кадрирования. Возвращает в начальное состояние
    * и обновляет фон.
    * @param {Event} evt
@@ -184,6 +238,10 @@
 
     resizeForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
+
+    resizeLeft.value = resizeTop.value = resizeSide.value = '';
+    resizeSubmitButton.disabled = false;
+    hideMessage();
   };
 
   /**

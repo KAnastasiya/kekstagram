@@ -7,6 +7,8 @@
 
 'use strict';
 
+var browserCookies = require('browser-cookies');
+
 (function() {
   /** @enum {string} */
   var FileType = {
@@ -114,6 +116,13 @@
    * @type {HTMLFormElement}
    */
   var filterForm = document.forms['upload-filter'];
+
+  /**
+   * В качестве фильтра выбираем либо последний примененный фильтр,
+   * либо значение "none"
+   * @type {String}
+   */
+  var selectedFilter = browserCookies.get('filter') || 'none';
 
   /**
    * @type {HTMLImageElement}
@@ -272,21 +281,6 @@
   };
 
   /**
-   * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
-   * записав сохраненный фильтр в cookie.
-   * @param {Event} evt
-   */
-  filterForm.onsubmit = function(evt) {
-    evt.preventDefault();
-
-    cleanupResizer();
-    updateBackground();
-
-    filterForm.classList.add('invisible');
-    uploadForm.classList.remove('invisible');
-  };
-
-  /**
    * Обработчик изменения фильтра. Добавляет класс из filterMap соответствующий
    * выбранному значению в форме.
    */
@@ -302,7 +296,8 @@
       };
     }
 
-    var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
+    // Запить выбранного фильтра
+    selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
     })[0].value;
 
@@ -310,6 +305,56 @@
     // убрать предыдущий примененный класс. Для этого нужно или запоминать его
     // состояние или просто перезаписывать.
     filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
+  };
+
+  /**
+   * Опредение срока жизни cookies
+   * @return {Date}
+   */
+  function getFilterExpireDate() {
+    var birthday = new Date('1987-04-12'),
+      currentDate = new Date(),
+      currentDay = currentDate.getDate(),
+      birthdayDay = birthday.getDate(),
+      currentMonth = currentDate.getMonth(),
+      birthdayMonth = birthday.getMonth(),
+      currentYear = currentDate.getFullYear(),
+      previousBirthday,
+      expireDateMillisecond,
+      expireDate;
+
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (currentMonth > birthdayMonth || (currentMonth === birthdayMonth && currentDay >= birthdayDay)) {
+      previousBirthday = new Date(currentYear, birthdayMonth, birthdayDay, 0, 0, 0, 0);
+    } else {
+      previousBirthday = new Date(currentYear - 1, birthdayMonth, birthdayDay, 0, 0, 0, 0);
+    }
+
+    expireDateMillisecond = currentDate.getTime() + (currentDate.getTime() - previousBirthday.getTime());
+    expireDate = new Date(expireDateMillisecond);
+    expireDate.setHours(23, 59, 59, 999);
+
+    return expireDate;
+  }
+
+  /**
+   * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
+   * записав сохраненный фильтр в cookie.
+   * @param {Event} evt
+   */
+  filterForm.onsubmit = function(evt) {
+    evt.preventDefault();
+
+    browserCookies.set('filter', selectedFilter, {
+      expires: getFilterExpireDate().toString()
+    });
+
+    cleanupResizer();
+    updateBackground();
+
+    filterForm.classList.add('invisible');
+    uploadForm.classList.remove('invisible');
   };
 
   cleanupResizer();

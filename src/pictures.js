@@ -5,7 +5,10 @@ var picturesContainer = document.querySelector('.pictures'),
   filtersList = filtersContainer.querySelectorAll('.filters-radio'),
   pictureTemplate = document.querySelector('#picture-template'),
   pictureToClone,
-  pictures = [];
+  pictures = [],
+  IMAGE_SIZE = 182,
+  TIMEOUT = 10000,
+  NEW_PICTURES_DELTA = 14 * 24 * 60 * 60 * 1000;
 
 /**
  * Поддерживаемые способы фильтрации
@@ -50,7 +53,7 @@ var getPictures = function(callback) {
 
   xhr.onerror = onAjaxError;
 
-  xhr.timeout = 10000;
+  xhr.timeout = TIMEOUT;
   xhr.ontimeout = onAjaxError;
 
   xhr.open('GET', 'https://o0.github.io/assets/json/pictures.json');
@@ -63,7 +66,7 @@ var getPictures = function(callback) {
  */
 var getPictureElement = function(data) {
   var element = pictureToClone.cloneNode(true),
-    pictureImage = new Image(182, 182),
+    pictureImage = new Image(IMAGE_SIZE, IMAGE_SIZE),
     pictureLoadTimeout;
 
   element.querySelector('.picture-comments').textContent = data.comments;
@@ -84,7 +87,7 @@ var getPictureElement = function(data) {
   pictureLoadTimeout = setTimeout( function() {
     pictureImage.src = '';
     element.classList.add('picture-load-failure');
-  }, 10000);
+  }, TIMEOUT);
 };
 
 /**
@@ -97,6 +100,42 @@ var renderPictures = function(picture) {
 };
 
 /**
+ * Получение списка картинок, загруженных за даты, более поздние, чем
+ * минимально допустимая дата; сортировка этого списка по убыванию дат
+ * @param  {Object} picturesToFilter  Список картинок, полученный от сервера
+ * @return {Object}                   Отфильтрованный список картинок
+ */
+var getNewPictures = function(picturesToFilter) {
+  var minDate = Date.now() - NEW_PICTURES_DELTA;
+
+  var newPictures = picturesToFilter.filter(function(pictureData) {
+    var pictureDate = new Date(pictureData.date).getTime();
+    return pictureDate >= minDate;
+  });
+
+  picturesToFilter = newPictures.sort(function(a, b) {
+    var pictureDate1 = new Date(a.date).getTime(),
+      pictureDate2 = new Date(b.date).getTime();
+    return pictureDate2 - pictureDate1;
+  });
+
+  return picturesToFilter;
+};
+
+/**
+ * Сортировка картинок по убыванию количества комментариев к ним
+ * @param  {Object} a  Информация об одной картинке
+ * @param  {Object} b  Информация о второй картинке
+ * @return {Object}    Список отсортированных картинок
+ */
+var getDiscussedPictures = function(picturesToFilter) {
+  picturesToFilter.sort(function(a, b) {
+    return b.comments - a.comments;
+  });
+  return picturesToFilter;
+};
+
+/**
  * Фильтрация списка картинок
  * @param  {Object} picturesList  Исходный список картинок
  * @param  {String} filter        Примененный фильтр
@@ -104,56 +143,15 @@ var renderPictures = function(picture) {
  */
 var getFilteredPictures = function(picturesList, filter) {
   var picturesToFilter = picturesList.slice();
-
   switch (filter) {
-    case filter.POPULAR:
-      // Все картинки, полученные от сервера, считаются популярными
-      break;
-
     case filters.NEW:
-      /**
-       * Наименьшая дата (в миллисекундах), за которую отображаются картинки
-       * @type {Number}
-       */
-      var minDate = Date.now() - 14 * 24 * 60 * 60 * 1000;
-      /**
-       * Получение списка картинок, загруженных за даты, более поздние, чем
-       * минимально допустимая дата
-       * @param  {Object} pictureData  Информация о картинке
-       * @return {Object}              Список картинок за последние 14 дней
-       */
-      var newPictures = picturesToFilter.filter(function(pictureData) {
-        var pictureDate = new Date(pictureData.date).getTime();
-        return pictureDate >= minDate;
-      });
-      /**
-       * Сортировка картинок за последние 14 дней по убыванию дат
-       * @param  {Object} a  Информация об одной картинке
-       * @param  {Object} b  Информация о второй картинке
-       * @return {Object}    Список отсортированных картинок
-       */
-      picturesToFilter = newPictures.sort(function(a, b) {
-        var pictureDate1 = new Date(a.date).getTime(),
-          pictureDate2 = new Date(b.date).getTime();
-        return pictureDate1 - pictureDate2;
-      });
-
-      break;
-
+      return getNewPictures(picturesToFilter);
     case filters.DISCUSSED:
-      /**
-       * Сортировка картинок по убыванию количества комментариев к ним
-       * @param  {Object} a  Информация об одной картинке
-       * @param  {Object} b  Информация о второй картинке
-       * @return {Object}    Список отсортированных картинок
-       */
-      picturesToFilter.sort(function(a, b) {
-        return b.comments - a.comments;
-      });
-      break;
+      return getDiscussedPictures(picturesToFilter);
+    case filter.POPULAR:
+    default:
+      return picturesToFilter;
   }
-
-  return picturesToFilter;
 };
 
 /**

@@ -6,8 +6,9 @@ var picturesContainer = document.querySelector('.pictures'),
   pictureTemplate = document.querySelector('#picture-template'),
   pictureToClone,
   pictures = [],
+  PICTURES_LOAD_URL = 'https://o0.github.io/assets/json/pictures.json',
   IMAGE_SIZE = 182,
-  TIMEOUT = 10000,
+  SERVER_TIMEOUT = 10000,
   NEW_PICTURES_DELTA = 14 * 24 * 60 * 60 * 1000;
 
 /**
@@ -17,9 +18,14 @@ var picturesContainer = document.querySelector('.pictures'),
 var filters = {
   POPULAR: 'filter-popular',
   NEW: 'filter-new',
-  DISCUSSED: 'filter-discussed',
-  DEFAULT: 'filter-popular'
+  DISCUSSED: 'filter-discussed'
 };
+
+/**
+ * Фильтр, устанавливаемый сразу при загрузке сайта
+ * @type {String}
+ */
+var DEFAULT_FILTER = filters.POPULAR;
 
 // Обеспечение кроссбраузерной шаблонизации
 if ('content' in pictureTemplate) {
@@ -53,10 +59,10 @@ var getPictures = function(callback) {
 
   xhr.onerror = onAjaxError;
 
-  xhr.timeout = TIMEOUT;
+  xhr.timeout = SERVER_TIMEOUT;
   xhr.ontimeout = onAjaxError;
 
-  xhr.open('GET', 'https://o0.github.io/assets/json/pictures.json');
+  xhr.open('GET', PICTURES_LOAD_URL);
   xhr.send();
 };
 
@@ -87,7 +93,7 @@ var getPictureElement = function(data) {
   pictureLoadTimeout = setTimeout( function() {
     pictureImage.src = '';
     element.classList.add('picture-load-failure');
-  }, TIMEOUT);
+  }, SERVER_TIMEOUT);
 };
 
 /**
@@ -183,6 +189,6 @@ var setFilterEnabled = function(filter) {
 getPictures(function(loaderPictures) {
   pictures = loaderPictures;
   setFiltersEnabled();
-  setFilterEnabled(filters.DEFAULT);
+  setFilterEnabled(DEFAULT_FILTER);
   filtersContainer.classList.remove('hidden');
 });

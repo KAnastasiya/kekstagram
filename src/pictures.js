@@ -6,10 +6,13 @@ var picturesContainer = document.querySelector('.pictures'),
   pictureTemplate = document.querySelector('#picture-template'),
   pictureToClone,
   pictures = [],
+  pageNumber = 0,
   PICTURES_LOAD_URL = 'https://o0.github.io/assets/json/pictures.json',
   IMAGE_SIZE = 182,
   SERVER_TIMEOUT = 10000,
-  NEW_PICTURES_DELTA = 14 * 24 * 60 * 60 * 1000;
+  NEW_PICTURES_DELTA = 14 * 24 * 60 * 60 * 1000,
+  PAGE_SIZE = 12,
+  SCROLL_TIMEOUT = 100;
 
 /**
  * Поддерживаемые способы фильтрации
@@ -97,12 +100,77 @@ var getPictureElement = function(data) {
 };
 
 /**
- * Отрисовка информации обо всех картинках
- * @param  {Object} picture  Информация о картинке
+ * Отрисовка информации обо всех картинках с одной страницы
+ * @param {Object}  pictureList  Список картинок
+ * @param {Boolean} replace      Признак необходимости очистки
+ *                               списка ранее отрисованных картинок
  */
-var renderPictures = function(picture) {
-  picturesContainer.innerHTML = '';
-  picture.forEach(getPictureElement);
+function renderPage(pictureList, replace) {
+  var from = pageNumber * PAGE_SIZE,
+    to = from + PAGE_SIZE;
+
+  if (replace) {
+    picturesContainer.innerHTML = '';
+  }
+
+  pictureList.slice(from, to).forEach(getPictureElement);
+  renderNextPageIfNeeded(pictureList);
+}
+
+/**
+ * Проверка на наличие следующей страницы с картинками и на
+ * необходимость ее отрисовки. Отрисока этой страницы (при необходимости)
+ * @param {Object} pictureList  Список картинок
+ */
+function renderNextPageIfNeeded(pictureList) {
+  if (isBottomReached() && isNextPageAvailable(pictureList)) {
+    pageNumber++;
+    renderPage(pictureList);
+  }
+}
+
+/**
+ * Отрисовка следующей страницы картинок при изменении размеров
+ * экрана/окна браузера (при необходимости)
+ */
+window.addEventListener('resize', function() {
+  renderNextPageIfNeeded(pictures);
+});
+
+/**
+ * Проверяет, есть ли последующие страницы с картинками
+ * @param  {Object}  pictures  Список картинок
+ * @return {Boolean}           Признак наличия следующей страницы
+ */
+var isNextPageAvailable = function(picturesList) {
+  return pageNumber < Math.floor(picturesList.length / PAGE_SIZE);
+};
+
+/**
+ * Определяет, достигнут ли конец (низ) страницы с картинками
+ * @return {Boolean}  Признак достижения конца страницы
+ */
+var isBottomReached = function() {
+  var pageElements = document.querySelectorAll('.picture'),
+    lastPageElement = pageElements[pageElements.length - 1],
+    lastPageElementPosition = lastPageElement.getBoundingClientRect();
+
+  return lastPageElementPosition.top <= window.innerHeight;
+};
+
+/**
+ * Автоподгрузка списка картинок при достижении конца страницы.
+ * Применяется троттлинг
+ */
+var setScrollEnabled = function() {
+  var scrollTimeout;
+
+  window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+      renderNextPageIfNeeded(pictures);
+    }, SCROLL_TIMEOUT);
+  });
 };
 
 /**
@@ -130,9 +198,8 @@ var getNewPictures = function(picturesToFilter) {
 
 /**
  * Сортировка картинок по убыванию количества комментариев к ним
- * @param  {Object} a  Информация об одной картинке
- * @param  {Object} b  Информация о второй картинке
- * @return {Object}    Список отсортированных картинок
+ * @param  {Object} picturesToFilter  Список картинок, полученный от сервера
+ * @return {Object}                   Список отсортированных картинок
  */
 var getDiscussedPictures = function(picturesToFilter) {
   picturesToFilter.sort(function(a, b) {
@@ -164,11 +231,11 @@ var getFilteredPictures = function(picturesList, filter) {
  * Обработка события нажатия на фильтры
  */
 var setFiltersEnabled = function() {
-  for (var i = 0; i < filtersList.length; i++) {
-    filtersList[i].onclick = function() {
-      setFilterEnabled(this.id);
-    };
-  }
+  filtersContainer.addEventListener('click', function(event) {
+    if (event.target.classList.contains('filters-radio')) {
+      setFilterEnabled(event.target.id);
+    }
+  });
 };
 
 /**
@@ -176,7 +243,8 @@ var setFiltersEnabled = function() {
  * @param {String} filter  Выбранный фильтр
  */
 var setFilterEnabled = function(filter) {
-  renderPictures( getFilteredPictures(pictures, filter) );
+  pageNumber = 0;
+  renderPage( getFilteredPictures(pictures, filter), true );
   for (var j = 0; j < filtersList.length; j++) {
     filtersList[j].removeAttribute('checked');
   }
@@ -190,5 +258,6 @@ getPictures(function(loaderPictures) {
   pictures = loaderPictures;
   setFiltersEnabled();
   setFilterEnabled(DEFAULT_FILTER);
+  setScrollEnabled();
   filtersContainer.classList.remove('hidden');
 });

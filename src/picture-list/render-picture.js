@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  getPictureElement: getPictureElement
+  Photo: Photo
 };
 
 var gallery = require('../gallery');
@@ -47,11 +47,10 @@ if ('content' in pictureTemplate) {
 
 /**
  * Подготовка карточки картинки
- * @param   {Object}  pictureList  Список картинок
  * @param   {Object}  data         Информация о картинке
  * @return  {Object}               Карточка картинки
  */
-function getPictureElement(pictureList, data) {
+function _getPictureElement(data) {
   var element = pictureToClone.cloneNode(true),
     pictureImage = new Image(IMAGE_SIZE, IMAGE_SIZE),
     pictureLoadTimeout;
@@ -75,11 +74,31 @@ function getPictureElement(pictureList, data) {
     element.classList.add(FAILURE_CLASS);
   }, IMAGE_LOAD_TIMEOUT);
 
-  element.addEventListener('click', function() {
+  return element;
+}
+
+/**
+ * Функция-конструктор для создания карточек с картинками
+ * @constructor
+ * @param  {Object}   data         Информация о картинке
+ * @param  {Element}  container    Элемент, в который будет загружаться картинка
+ * @param  {Object}   pictureList  Список картинок
+ */
+function Photo(data, container, pictureList) {
+  this.data = data;
+  this.element = _getPictureElement(data);
+
+  this._onPictureClick = function(event) {
     var pictureIndex = pictureList.indexOf(data);
     event.preventDefault();
     gallery.openGallery(pictureIndex);
-  });
+  };
 
-  return element;
+  this.remove = function() {
+    this.element.removeEventListener('click', this._onPictureClick);
+    this.element.parentNode.removeChild(this.element);
+  };
+
+  this.element.addEventListener('click', this._onPictureClick);
+  container.appendChild(this.element);
 }

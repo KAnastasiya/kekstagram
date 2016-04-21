@@ -44,7 +44,7 @@ function Resizer(image) {
   this._onDragStart = this._onDragStart.bind(this);
   this._onDragEnd = this._onDragEnd.bind(this);
   this._onDrag = this._onDrag.bind(this);
-};
+}
 
 Resizer.prototype = {
   /**

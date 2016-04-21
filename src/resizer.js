@@ -1,11 +1,15 @@
 'use strict';
 
+module.exports = {
+  Resizer: Resizer
+};
+
 /**
  * Объект кадрирования
  * @constructor
  * @param  {string}  image  Картинка, которая будет кадрироваться
  */
-var Resizer = function(image) {
+function Resizer(image) {
   this._image = new Image();
   this._image.src = image;
 
@@ -397,5 +401,3 @@ function showResizePictureSize(stroke, context, resizeConstraint, image) {
   context.textBaseline = 'bottom';
   context.fillText(image.naturalWidth + ' x ' + image.naturalHeight, 0, -resizeConstraint.side / 2 - stroke * 1.5);
 }
-
-window.Resizer = Resizer;

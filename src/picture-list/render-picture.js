@@ -4,6 +4,8 @@ module.exports = {
   getPictureElement: getPictureElement
 };
 
+var gallery = require('../gallery');
+
 /**
  * Размер картинки (и ширина, и высота)
  * @constant
@@ -45,10 +47,11 @@ if ('content' in pictureTemplate) {
 
 /**
  * Подготовка карточки картинки
- * @param   {Object}  data  Информация о картинке
- * @return  {Object}        Карточка картинки
+ * @param   {Object}  pictureList  Список картинок
+ * @param   {Object}  data         Информация о картинке
+ * @return  {Object}               Карточка картинки
  */
-function getPictureElement(data) {
+function getPictureElement(pictureList, data) {
   var element = pictureToClone.cloneNode(true),
     pictureImage = new Image(IMAGE_SIZE, IMAGE_SIZE),
     pictureLoadTimeout;
@@ -71,6 +74,12 @@ function getPictureElement(data) {
     pictureImage.src = '';
     element.classList.add(FAILURE_CLASS);
   }, IMAGE_LOAD_TIMEOUT);
+
+  element.addEventListener('click', function() {
+    var pictureIndex = pictureList.indexOf(data);
+    event.preventDefault();
+    gallery.openGallery(pictureIndex);
+  });
 
   return element;
 }

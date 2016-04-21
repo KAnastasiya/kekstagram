@@ -8,7 +8,8 @@ module.exports = {
   showLoadingError: showLoadingError
 };
 
-var renderPicture = require('./render-picture');
+var renderPicture = require('./render-picture'),
+  gallery = require('../gallery');
 
 /**
  * Размер страницы с картинками (число картинок, помещаемых на одной странице)
@@ -60,11 +61,12 @@ function renderPage(pictureList, pageNum, replace) {
 
   // Получение информации о каждой картинке и их отрисовка
   pictureList.slice(from, to).forEach(function(picture) {
-    var element = renderPicture.getPictureElement(picture);
+    var element = renderPicture.getPictureElement(pictureList, picture);
     picturesContainer.appendChild(element);
   });
 
   renderNextPageIfNeeded(pictureList);
+  gallery.getPicturesList(pictureList);
 }
 
 /**

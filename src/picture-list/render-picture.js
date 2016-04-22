@@ -93,7 +93,7 @@ function Photo(data, container, pictureList) {
   container.appendChild(this.element);
 
   this.element.addEventListener('click', function(event) {
-    self._onPictureClick(event);
+    self._openGallery(event);
   });
 }
 
@@ -101,15 +101,15 @@ function Photo(data, container, pictureList) {
  * Прототип конструктора Photo. Обработчик события нажатия на картинку
  * @param   {Object}  event  Событие, вызвавшее срабатывание обработчика
  */
-Photo.prototype._onPictureClick = function(event) {
+Photo.prototype._openGallery = function(event) {
   event.preventDefault();
-  gallery.picturesGallery.openGallery(this.index);
+  gallery.picturesGallery.initGallery(this.index);
 };
 
 /**
  * Прототип конструктора Photo. Удаление всех обработчиков событий
  */
 Photo.prototype.remove = function() {
-  this.element.removeEventListener('click', this._onPictureClick);
+  this.element.removeEventListener('click', this._openGallery);
   this.element.parentNode.removeChild(this.element);
 };

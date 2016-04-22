@@ -59,7 +59,7 @@ window.addEventListener('resizerchange', function() {
 /**
  * Обработчик изменения значений полей формы кадрирования
  */
-resizeForm.addEventListener('input', function resizeOnInput() {
+resizeForm.addEventListener('input', function() {
   var errorMessage = _validateResizeForm();
 
   if (errorMessage) {

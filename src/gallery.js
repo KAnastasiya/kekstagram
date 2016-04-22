@@ -21,13 +21,13 @@ function Gallery() {
    * Показ галереи
    * @param  {Number}  pictureIndex  Индекс выбранной картинки
    */
-  this.openGallery = function(pictureIndex) {
+  this.initGallery = function(pictureIndex) {
     galleryContainer.classList.remove('invisible');
     currentPictureIndex = pictureIndex;
     _showGalleryPicture();
 
     galleryContainer.addEventListener('click', _closeGallery);
-    document.addEventListener('keydown', _onDocumentKeyDown);
+    document.addEventListener('keydown', _closeGalleryByEscape);
   };
 
     /**
@@ -53,13 +53,13 @@ function Gallery() {
   function _closeGallery() {
     galleryContainer.classList.add('invisible');
     galleryContainer.removeEventListener('click', _closeGallery);
-    document.removeEventListener('keydown', _onDocumentKeyDown);
+    document.removeEventListener('keydown', _closeGalleryByEscape);
   }
 
   /**
    * Обработка нажатия на текущю картинку в галерее
    */
-  function _onPhotoClick(event) {
+  function _showNextPicture(event) {
     event.stopPropagation();
     currentPictureIndex++;
     _showGalleryPicture();
@@ -68,11 +68,11 @@ function Gallery() {
   /**
    * Обработка нажатия на клавишу Escape
    */
-  function _onDocumentKeyDown(event) {
+  function _closeGalleryByEscape(event) {
     if (event.keyCode === 27) {
       _closeGallery();
     }
   }
 
-  gallery.addEventListener('click', _onPhotoClick);
+  gallery.addEventListener('click', _showNextPicture);
 }

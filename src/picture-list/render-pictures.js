@@ -73,7 +73,7 @@ function renderPage(pictureList, pageNum, replace) {
   picturesContainer.appendChild(container);
 
   renderNextPageIfNeeded(pictureList);
-  gallery.getPicturesList(pictureList);
+  gallery.picturesGallery.setPicturesList(pictureList);
 }
 
 /**

@@ -1,82 +1,78 @@
 'use strict';
 
 module.exports = {
-  openGallery: openGallery,
-  getPicturesList: getPicturesList
+  picturesGallery: new Gallery()
 };
 
-var galleryContainer = document.querySelector('.gallery-overlay'),
-  gallery = document.querySelector('.gallery-overlay-preview'),
-  picture = document.querySelector('.gallery-overlay-image'),
-  likes = document.querySelector('.likes-count'),
-  comments = document.querySelector('.comments-count'),
-  galleryPictures = [],
-  currentPictureIndex = 0;
-
-gallery.addEventListener('click', _onPhotoClick);
-
 /**
- * Получение списка картинок
- * @param  {Object}  picturesList  Список картинок
- * @return {Object}                Список картинок
+ * Функция-конструктор для создания галереи
+ * @constructor
  */
-function getPicturesList(picturesList) {
-  galleryPictures = picturesList;
-  return galleryPictures;
-}
+function Gallery() {
+  var galleryContainer = document.querySelector('.gallery-overlay'),
+    gallery = document.querySelector('.gallery-overlay-preview'),
+    picture = document.querySelector('.gallery-overlay-image'),
+    likes = document.querySelector('.likes-count'),
+    comments = document.querySelector('.comments-count'),
+    galleryPictures = [],
+    currentPictureIndex = 0;
 
-/**
- * Показ галереи
- * @param   {String}  pictureIndex  Номер выбранной картинки
- */
-function openGallery(pictureIndex) {
-  currentPictureIndex = pictureIndex;
-  galleryContainer.classList.remove('invisible');
-  _showGalleryPicture();
+  /**
+   * Показ галереи
+   * @param  {Number}  pictureIndex  Индекс выбранной картинки
+   */
+  this.openGallery = function(pictureIndex) {
+    galleryContainer.classList.remove('invisible');
+    currentPictureIndex = pictureIndex;
+    _showGalleryPicture();
 
-  galleryContainer.addEventListener('click', _onGalleryContainerClick);
-  document.addEventListener('keydown', _onDocumentKeyDown);
-}
+    galleryContainer.addEventListener('click', _closeGallery);
+    document.addEventListener('keydown', _onDocumentKeyDown);
+  };
 
-/**
- * Отрисовка в галерее информации о картинке
- */
-function _showGalleryPicture() {
-  picture.src = galleryPictures[currentPictureIndex].url;
-  comments.textContent = galleryPictures[currentPictureIndex].comments;
-  likes.textContent = galleryPictures[currentPictureIndex].likes;
-}
+    /**
+   * Получение списка картинок
+   * @param  {Object}  picturesList  Список картинок
+   */
+  this.setPicturesList = function(picturesList) {
+    galleryPictures = picturesList;
+  };
 
-/**
- * Закрытие галереи
- */
-function _closeGallery() {
-  galleryContainer.classList.add('invisible');
-  galleryContainer.removeEventListener('click', _onGalleryContainerClick);
-  document.removeEventListener('keydown', _onDocumentKeyDown);
-}
-
-/**
- * Обработка нажатия на текущю картинку в галерее
- */
-function _onPhotoClick(event) {
-  event.stopPropagation();
-  currentPictureIndex++;
-  _showGalleryPicture();
-}
-
-/**
- * Обработка нажатия на область вокруг формы галереи
- */
-function _onGalleryContainerClick() {
-  _closeGallery();
-}
-
-/**
- * Обработка нажатия на клавишу Escape
- */
-function _onDocumentKeyDown(event) {
-  if(event.keyCode === 27) {
-    _closeGallery();
+  /**
+   * Отрисовка в галерее информации о картинке
+   */
+  function _showGalleryPicture() {
+    picture.src = galleryPictures[currentPictureIndex].url;
+    comments.textContent = galleryPictures[currentPictureIndex].comments;
+    likes.textContent = galleryPictures[currentPictureIndex].likes;
   }
+
+  /**
+   * Закрытие галереи
+   */
+  function _closeGallery() {
+    galleryContainer.classList.add('invisible');
+    galleryContainer.removeEventListener('click', _closeGallery);
+    document.removeEventListener('keydown', _onDocumentKeyDown);
+  }
+
+  /**
+   * Обработка нажатия на текущю картинку в галерее
+   */
+  function _onPhotoClick(event) {
+    event.stopPropagation();
+    currentPictureIndex++;
+    _showGalleryPicture();
+  }
+
+  /**
+   * Обработка нажатия на клавишу Escape
+   */
+  function _onDocumentKeyDown(event) {
+    if (event.keyCode === 27) {
+      _closeGallery();
+    }
+  }
+
+  gallery.addEventListener('click', _onPhotoClick);
 }

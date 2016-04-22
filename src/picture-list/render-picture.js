@@ -103,7 +103,7 @@ function Photo(data, container, pictureList) {
  */
 Photo.prototype._onPictureClick = function(event) {
   event.preventDefault();
-  gallery.openGallery(this.index);
+  gallery.picturesGallery.openGallery(this.index);
 };
 
 /**

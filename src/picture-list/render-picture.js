@@ -1,10 +1,8 @@
 'use strict';
 
-module.exports = {
-  Photo: Photo
-};
+module.exports = Photo;
 
-var gallery = require('../gallery');
+var bindAllFunc = require('../bind-all-function');
 
 /**
  * Размер картинки (и ширина, и высота)
@@ -85,16 +83,14 @@ function _getPictureElement(data) {
  * @param  {Object}   pictureList  Список картинок
  */
 function Photo(data, container, pictureList) {
-  var self = this;
+  // Фиксация контекста
+  bindAllFunc(this);
 
-  this.data = data;
-  this.element = _getPictureElement(this.data);
-  this.index = pictureList.indexOf(this.data);
+  this.element = _getPictureElement(data);
+  this.index = pictureList.indexOf(data);
   container.appendChild(this.element);
 
-  this.element.addEventListener('click', function(event) {
-    self._openGallery(event);
-  });
+  this.element.addEventListener('click', this._openGallery);
 }
 
 /**
@@ -102,8 +98,9 @@ function Photo(data, container, pictureList) {
  * @param   {Object}  event  Событие, вызвавшее срабатывание обработчика
  */
 Photo.prototype._openGallery = function(event) {
+  var openPhotoInGallery = new CustomEvent( 'openPhotoInGallery', { detail: this.index } );
   event.preventDefault();
-  gallery.picturesGallery.initGallery(this.index);
+  this.element.dispatchEvent(openPhotoInGallery);
 };
 
 /**

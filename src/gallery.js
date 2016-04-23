@@ -1,78 +1,83 @@
 'use strict';
 
-module.exports = {
-  picturesGallery: new Gallery()
-};
+module.exports = Gallery;
+
+var bindAllFunc = require('./bind-all-function');
+
+var galleryContainer = document.querySelector('.gallery-overlay'),
+  galleryPictures = [];
 
 /**
  * Функция-конструктор для создания галереи
  * @constructor
  */
 function Gallery() {
-  var galleryContainer = document.querySelector('.gallery-overlay'),
-    gallery = document.querySelector('.gallery-overlay-preview'),
-    picture = document.querySelector('.gallery-overlay-image'),
-    likes = document.querySelector('.likes-count'),
-    comments = document.querySelector('.comments-count'),
-    galleryPictures = [],
-    currentPictureIndex = 0;
+  // Фиксация контекста
+  bindAllFunc(this);
 
-  /**
-   * Показ галереи
-   * @param  {Number}  pictureIndex  Индекс выбранной картинки
-   */
-  this.initGallery = function(pictureIndex) {
-    galleryContainer.classList.remove('invisible');
-    currentPictureIndex = pictureIndex;
-    _showGalleryPicture();
+  var galleryElement = document.querySelector('.gallery-overlay-preview');
 
-    galleryContainer.addEventListener('click', _closeGallery);
-    document.addEventListener('keydown', _closeGalleryByEscape);
-  };
-
-    /**
-   * Получение списка картинок
-   * @param  {Object}  picturesList  Список картинок
-   */
-  this.setPicturesList = function(picturesList) {
-    galleryPictures = picturesList;
-  };
-
-  /**
-   * Отрисовка в галерее информации о картинке
-   */
-  function _showGalleryPicture() {
-    picture.src = galleryPictures[currentPictureIndex].url;
-    comments.textContent = galleryPictures[currentPictureIndex].comments;
-    likes.textContent = galleryPictures[currentPictureIndex].likes;
-  }
-
-  /**
-   * Закрытие галереи
-   */
-  function _closeGallery() {
-    galleryContainer.classList.add('invisible');
-    galleryContainer.removeEventListener('click', _closeGallery);
-    document.removeEventListener('keydown', _closeGalleryByEscape);
-  }
-
-  /**
-   * Обработка нажатия на текущю картинку в галерее
-   */
-  function _showNextPicture(event) {
-    event.stopPropagation();
-    currentPictureIndex++;
-    _showGalleryPicture();
-  }
-
-  /**
-   * Обработка нажатия на клавишу Escape
-   */
-  function _closeGalleryByEscape(event) {
-    if (event.keyCode === 27) {
-      _closeGallery();
-    }
-  }
-
-  gallery.addEventListener('click', _showNextPicture);
+  window.addEventListener('openPhotoInGallery', this._initGallery, true);
+  galleryElement.addEventListener('click', this._showNextPicture);
 }
+
+/**
+ * Прототип конструктора Gallery. Загрузка в галлерею списка картинок
+ * @param  {Object}  pictureList  Список картинок
+ */
+Gallery.prototype.setGalleryPictures = function(pictureList) {
+  galleryPictures = pictureList;
+};
+
+/**
+ * Прототип конструктора Gallery. Показ галереи
+ * @param  {Object}  event  Событие, вызвавшее срабаgalleryElementтывание обработчика
+ */
+Gallery.prototype._initGallery = function(event) {
+  galleryContainer.classList.remove('invisible');
+  this.pictureIndex = event.detail;
+  this._showGalleryPicture();
+
+  galleryContainer.addEventListener('click', this._closeGallery);
+  document.addEventListener('keydown', this._closeGalleryByEscape);
+};
+
+/**
+ * Прототип конструктора Gallery. Отрисовка в галерее информации о картинке
+ */
+Gallery.prototype._showGalleryPicture = function() {
+  var picture = document.querySelector('.gallery-overlay-image'),
+    likes = document.querySelector('.likes-count'),
+    comments = document.querySelector('.comments-count');
+
+  picture.src = galleryPictures[this.pictureIndex].url;
+  comments.textContent = galleryPictures[this.pictureIndex].comments;
+  likes.textContent = galleryPictures[this.pictureIndex].likes;
+};
+
+/**
+ * Прототип конструктора Gallery. Обработка нажатия на текущую картинку в галерее
+ */
+Gallery.prototype._showNextPicture = function(event) {
+  event.stopPropagation();
+  this.pictureIndex++;
+  this._showGalleryPicture();
+};
+
+/**
+ * Прототип конструктора Gallery. Закрытие галереи
+ */
+Gallery.prototype._closeGallery = function() {
+  galleryContainer.classList.add('invisible');
+  galleryContainer.removeEventListener('click', this._closeGallery);
+  document.removeEventListener('keydown', this._closeGalleryByEscape);
+};
+
+/**
+ * Прототип конструктора Gallery. Обработка нажатия на клавишу Escape
+ */
+Gallery.prototype._closeGalleryByEscape = function(event) {
+  if (event.keyCode === 27) {
+    this._closeGallery();
+  }
+};

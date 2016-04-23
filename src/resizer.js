@@ -1,9 +1,6 @@
 'use strict';
 
-module.exports = {
-  Resizer: Resizer
-};
-
+module.exports = Resizer;
 /**
  * Объект кадрирования
  * @constructor

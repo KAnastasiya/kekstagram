@@ -41,6 +41,8 @@ var pageNumber = 0;
 
 var picturesContainer = document.querySelector('.pictures');
 
+var renderedPictures = [];
+
 /**
  * Отрисовка списка картинок выбранной страницы
  * @param  {Object}   pictureList  Список картинок, полученный с сервера
@@ -51,19 +53,24 @@ function renderPage(pictureList, pageNum, replace) {
   var from = pageNum * PAGE_SIZE,
     to = from + PAGE_SIZE;
 
+  var container = document.createDocumentFragment();
+
   pageNumber = pageNum;
 
   // Предварительная очистка содержимого страницы. Используется при
   // отрисовке отфильтрованных списков
   if (replace) {
-    picturesContainer.innerHTML = '';
+    renderedPictures.forEach(function(picture) {
+      picture.remove();
+    });
+    renderedPictures = [];
   }
 
-  // Получение информации о каждой картинке и их отрисовка
+  // Получение информации о каждой картинке и отрисовка картинок
   pictureList.slice(from, to).forEach(function(picture) {
-    var element = renderPicture.getPictureElement(pictureList, picture);
-    picturesContainer.appendChild(element);
+    renderedPictures.push(new renderPicture.Photo(picture, container, pictureList));
   });
+  picturesContainer.appendChild(container);
 
   renderNextPageIfNeeded(pictureList);
   gallery.getPicturesList(pictureList);

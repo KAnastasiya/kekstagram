@@ -8,7 +8,8 @@ module.exports = {
 var uploadPicture = require('./upload-picture'),
   retouchPicture = require('./retouch-picture'),
   utilities = require('./picture-process-utilities'),
-  errors = require('./picture-process-errors');
+  errors = require('./picture-process-errors'),
+  resizer = require('../resizer');
 
 var currentResizer,
   resizeForm = document.forms['upload-resize'],
@@ -26,7 +27,7 @@ function initResizer(fileReader) {
     currentResizer.remove();
     currentResizer = null;
   }
-  currentResizer = new window.Resizer(fileReader.result);
+  currentResizer = new resizer.Resizer(fileReader.result);
   currentResizer.setElement(resizeForm);
   showResizer();
 }

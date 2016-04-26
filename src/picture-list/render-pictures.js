@@ -39,13 +39,19 @@ var FAILURE_CLASS = 'pictures-failure';
  */
 var pageNumber = 0;
 
-/**
- * Объект "Галерея"
- */
-var gallery = new Gallery();
-
 var picturesContainer = document.querySelector('.pictures'),
   renderedPictures = [];
+
+/**
+ * Создание и наполнение объекта "Галерея"
+ */
+var gallery = new Gallery(document.querySelector('.gallery-overlay-preview')),
+  galleryPictureElement = document.querySelector('.gallery-overlay-image'),
+  galleryPictureLikes = document.querySelector('.likes-count'),
+  galleryPictureComments = document.querySelector('.comments-count');
+
+gallery.setGalleryContainer(document.querySelector('.gallery-overlay'));
+gallery.setGalleryPictureElements(galleryPictureElement, galleryPictureLikes, galleryPictureComments);
 
 /**
  * Отрисовка списка картинок выбранной страницы

@@ -4,29 +4,46 @@ module.exports = Gallery;
 
 var bindAllFunc = require('./bind-all-function');
 
-var galleryContainer = document.querySelector('.gallery-overlay'),
-  galleryPictures = [];
-
 /**
  * Функция-конструктор для создания галереи
  * @constructor
  */
-function Gallery() {
+function Gallery(element) {
   // Фиксация контекста
   bindAllFunc(this);
 
-  var galleryElement = document.querySelector('.gallery-overlay-preview');
-
+  this.galleryElement = element;
+  this.galleryPictures = [];
   window.addEventListener('openPhotoInGallery', this._initGallery, true);
-  galleryElement.addEventListener('click', this._showNextPicture);
+  this.galleryElement.addEventListener('click', this._showNextPicture);
 }
+
+/**
+ * Прототип конструктора Gallery. Установка DOM-элемента, в котором находится галерея
+ * @param  {Element}  galleryContainer  DOM-элемент, в котором находится галерея
+ */
+Gallery.prototype.setGalleryContainer = function(galleryContainer) {
+  this.galleryContainer = galleryContainer;
+};
+
+/**
+ * Прототип конструктора Gallery. Установка DOM-элементов,из которых состоят картинки галереи
+ * @param  {Element}  pictureContainer  DOM-элемент,в котором отображается картинка
+ * @param  {Element}  pictureLikes      DOM-элемент,в котором отображаются лайки к картинке
+ * @param  {Element}  pictureComments   DOM-элемент,в котором отображаются комментарии к картинке
+ */
+Gallery.prototype.setGalleryPictureElements = function(pictureContainer, pictureLikes, pictureComments) {
+  this.pictureContainer = pictureContainer;
+  this.pictureLikes = pictureLikes;
+  this.pictureComments = pictureComments;
+};
 
 /**
  * Прототип конструктора Gallery. Загрузка в галлерею списка картинок
  * @param  {Object}  pictureList  Список картинок
  */
 Gallery.prototype.setGalleryPictures = function(pictureList) {
-  galleryPictures = pictureList;
+  this.galleryPictures = pictureList;
 };
 
 /**
@@ -34,11 +51,11 @@ Gallery.prototype.setGalleryPictures = function(pictureList) {
  * @param  {Object}  event  Событие, вызвавшее срабаgalleryElementтывание обработчика
  */
 Gallery.prototype._initGallery = function(event) {
-  galleryContainer.classList.remove('invisible');
+  this.galleryContainer.classList.remove('invisible');
   this.pictureIndex = event.detail;
   this._showGalleryPicture();
 
-  galleryContainer.addEventListener('click', this._closeGallery);
+  this.galleryContainer.addEventListener('click', this._closeGallery);
   document.addEventListener('keydown', this._closeGalleryByEscape);
 };
 
@@ -46,13 +63,9 @@ Gallery.prototype._initGallery = function(event) {
  * Прототип конструктора Gallery. Отрисовка в галерее информации о картинке
  */
 Gallery.prototype._showGalleryPicture = function() {
-  var picture = document.querySelector('.gallery-overlay-image'),
-    likes = document.querySelector('.likes-count'),
-    comments = document.querySelector('.comments-count');
-
-  picture.src = galleryPictures[this.pictureIndex].url;
-  comments.textContent = galleryPictures[this.pictureIndex].comments;
-  likes.textContent = galleryPictures[this.pictureIndex].likes;
+  this.pictureContainer.src = this.galleryPictures[this.pictureIndex].url;
+  this.pictureComments.textContent = this.galleryPictures[this.pictureIndex].comments;
+  this.pictureLikes.textContent = this.galleryPictures[this.pictureIndex].likes;
 };
 
 /**
@@ -68,8 +81,8 @@ Gallery.prototype._showNextPicture = function(event) {
  * Прототип конструктора Gallery. Закрытие галереи
  */
 Gallery.prototype._closeGallery = function() {
-  galleryContainer.classList.add('invisible');
-  galleryContainer.removeEventListener('click', this._closeGallery);
+  this.galleryContainer.classList.add('invisible');
+  this.galleryContainer.removeEventListener('click', this._closeGallery);
   document.removeEventListener('keydown', this._closeGalleryByEscape);
 };
 

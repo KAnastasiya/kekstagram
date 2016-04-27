@@ -9,7 +9,7 @@ var uploadPicture = require('./upload-picture'),
   retouchPicture = require('./retouch-picture'),
   utilities = require('./picture-process-utilities'),
   errors = require('./picture-process-errors'),
-  resizer = require('../resizer');
+  Resizer = require('../resizer');
 
 var currentResizer,
   resizeForm = document.forms['upload-resize'],
@@ -27,7 +27,7 @@ function initResizer(fileReader) {
     currentResizer.remove();
     currentResizer = null;
   }
-  currentResizer = new resizer.Resizer(fileReader.result);
+  currentResizer = new Resizer(fileReader.result);
   currentResizer.setElement(resizeForm);
   showResizer();
 }
@@ -59,7 +59,7 @@ window.addEventListener('resizerchange', function() {
 /**
  * Обработчик изменения значений полей формы кадрирования
  */
-resizeForm.addEventListener('input', function resizeOnInput() {
+resizeForm.addEventListener('input', function() {
   var errorMessage = _validateResizeForm();
 
   if (errorMessage) {

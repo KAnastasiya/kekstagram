@@ -8,8 +8,8 @@ module.exports = {
   showLoadingError: showLoadingError
 };
 
-var renderPicture = require('./render-picture'),
-  gallery = require('../gallery');
+var Photo = require('./render-picture'),
+  Gallery = require('../gallery');
 
 /**
  * Размер страницы с картинками (число картинок, помещаемых на одной странице)
@@ -39,9 +39,19 @@ var FAILURE_CLASS = 'pictures-failure';
  */
 var pageNumber = 0;
 
-var picturesContainer = document.querySelector('.pictures');
+var picturesContainer = document.querySelector('.pictures'),
+  renderedPictures = [];
 
-var renderedPictures = [];
+/**
+ * Создание и наполнение объекта "Галерея"
+ */
+var gallery = new Gallery(document.querySelector('.gallery-overlay-preview')),
+  galleryPictureElement = document.querySelector('.gallery-overlay-image'),
+  galleryPictureLikes = document.querySelector('.likes-count'),
+  galleryPictureComments = document.querySelector('.comments-count');
+
+gallery.setGalleryContainer(document.querySelector('.gallery-overlay'));
+gallery.setGalleryPictureElements(galleryPictureElement, galleryPictureLikes, galleryPictureComments);
 
 /**
  * Отрисовка списка картинок выбранной страницы
@@ -53,6 +63,8 @@ function renderPage(pictureList, pageNum, replace) {
   var from = pageNum * PAGE_SIZE,
     to = from + PAGE_SIZE;
 
+  // Контейнер-обертка для вставки списка картинок. Автоматически будет
+  // удален после вставки картинок
   var container = document.createDocumentFragment();
 
   pageNumber = pageNum;
@@ -68,12 +80,12 @@ function renderPage(pictureList, pageNum, replace) {
 
   // Получение информации о каждой картинке и отрисовка картинок
   pictureList.slice(from, to).forEach(function(picture) {
-    renderedPictures.push(new renderPicture.Photo(picture, container, pictureList));
+    renderedPictures.push(new Photo(picture, container, pictureList));
   });
   picturesContainer.appendChild(container);
 
   renderNextPageIfNeeded(pictureList);
-  gallery.getPicturesList(pictureList);
+  gallery.setGalleryPictures(pictureList);
 }
 
 /**

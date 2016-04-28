@@ -2,7 +2,8 @@
 
 module.exports = Gallery;
 
-var bindAllFunc = require('./bind-all-function');
+var BaseComponent = require('./base-component'),
+  utils = require('./utils');
 
 /**
  * Функция-конструктор для создания галереи
@@ -10,14 +11,14 @@ var bindAllFunc = require('./bind-all-function');
  * @param  {Element}  element  DOM-элемент, в котором располагается галерея
  */
 function Gallery(element) {
-  bindAllFunc(this);
-
-  this.galleryElement = element;
+  BaseComponent.call(this, element);
   this.galleryPictures = [];
-
-  this.galleryElement.addEventListener('click', this._showNextPicture);
+  this.element.addEventListener('click', this._showNextPicture);
   window.addEventListener('hashchange', this.changeGalleryState);
 }
+
+// Наследование объектов конструктора Gallery от "главного" DOM-элемента
+utils.inherit(Gallery, BaseComponent);
 
 /**
  * Прототип конструктора Gallery. Установка DOM-элемента, в котором находится галерея

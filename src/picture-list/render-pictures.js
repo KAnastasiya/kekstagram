@@ -63,9 +63,10 @@ function renderPage(pictureList, pageNum, replace) {
   var from = pageNum * PAGE_SIZE,
     to = from + PAGE_SIZE;
 
-  // Контейнер-обертка для вставки списка картинок. Автоматически будет
+  // Контейнер-обертка для вставки списка картинок. Используется
+  // для быстрой вставки списка картинок в DOM. Автоматически будет
   // удален после вставки картинок
-  var container = document.createDocumentFragment();
+  var fragment = document.createDocumentFragment();
 
   pageNumber = pageNum;
 
@@ -78,11 +79,15 @@ function renderPage(pictureList, pageNum, replace) {
     renderedPictures = [];
   }
 
-  // Получение информации о каждой картинке и отрисовка картинок
+  // Получение информации о каждой картинке и вставка картинок в fragment
   pictureList.slice(from, to).forEach(function(picture) {
-    renderedPictures.push(new Photo(picture, container));
+    var photo = new Photo(picture);
+    photo.renderTo(fragment);
+    renderedPictures.push(photo);
   });
-  picturesContainer.appendChild(container);
+
+  // Отрисовка картинок (их вставка в DOM)
+  picturesContainer.appendChild(fragment);
 
   renderNextPageIfNeeded(pictureList);
   gallery.setGalleryPictures(pictureList);

@@ -2,7 +2,8 @@
 
 module.exports = Photo;
 
-var bindAllFunc = require('../bind-all-function');
+var BaseComponent = require('../base-component'),
+  utils = require('../utils');
 
 /**
  * Размер картинки (и ширина, и высота)
@@ -44,52 +45,35 @@ if ('content' in pictureTemplate) {
 }
 
 /**
- * Подготовка карточки картинки
- * @param   {Object}  data         Информация о картинке
- * @return  {Object}               Карточка картинки
- */
-function _getPictureElement(data) {
-  var element = pictureToClone.cloneNode(true),
-    pictureImage = new Image(IMAGE_SIZE, IMAGE_SIZE),
-    pictureLoadTimeout;
-
-  element.querySelector('.picture-comments').textContent = data.comments;
-  element.querySelector('.picture-likes').textContent = data.likes;
-
-  pictureImage.onload = function() {
-    clearTimeout(pictureLoadTimeout);
-    element.querySelector('img').src = pictureImage.src;
-  };
-
-  pictureImage.onerror = function() {
-    element.classList.add(FAILURE_CLASS);
-  };
-
-  pictureImage.src = data.url;
-
-  pictureLoadTimeout = setTimeout( function() {
-    pictureImage.src = '';
-    element.classList.add(FAILURE_CLASS);
-  }, IMAGE_LOAD_TIMEOUT);
-
-  return element;
-}
-
-/**
  * Функция-конструктор для создания карточек с картинками
  * @constructor
- * @param  {Object}   data         Информация о картинке
- * @param  {Element}  container    Элемент, в который будет загружаться картинка
+ * @param  {Object}   picture  Информация о картинке
  */
-function Photo(data, container) {
-  bindAllFunc(this);
-
-  this.element = _getPictureElement(data);
-  this.url = data.url;
-  this.element.addEventListener('click', this._openGallery);
-
-  container.appendChild(this.element);
+function Photo(picture) {
+  BaseComponent.call(this, _getPictureElement(picture));
+  this.url = picture.url;
 }
+
+// Наследование объектов конструктора Photo от "главного" DOM-элемента
+utils.inherit(Photo, BaseComponent);
+
+/**
+ * Прототип конструктора Photo. Вставка картинки в свой контейнер.
+ * Установка обработчиков событий
+ */
+Photo.prototype.renderTo = function(container) {
+  BaseComponent.prototype.renderTo.call(this, container);
+  this.element.addEventListener('click', this._openGallery);
+};
+
+/**
+ * Прототип конструктора Photo. Удаление DOM-элемента картинки.
+ * Удаление обработчиков событий
+ */
+Photo.prototype.remove = function() {
+  BaseComponent.prototype.remove.call(this);
+  this.element.removeEventListener('click', this._openGallery);
+};
 
 /**
  * Прототип конструктора Photo. Обработчик события нажатия на картинку
@@ -100,9 +84,33 @@ Photo.prototype._openGallery = function(event) {
 };
 
 /**
- * Прототип конструктора Photo. Удаление всех обработчиков событий
+ * Подготовка карточки картинки
+ * @param   {Object}  picture      Информация о картинке
+ * @return  {Object}               Карточка картинки
  */
-Photo.prototype.remove = function() {
-  this.element.removeEventListener('click', this._openGallery);
-  this.element.parentNode.removeChild(this.element);
-};
+function _getPictureElement(picture) {
+  var element = pictureToClone.cloneNode(true),
+    pictureImage = new Image(IMAGE_SIZE, IMAGE_SIZE),
+    pictureLoadTimeout;
+
+  element.querySelector('.picture-comments').textContent = picture.comments;
+  element.querySelector('.picture-likes').textContent = picture.likes;
+
+  pictureImage.onload = function() {
+    clearTimeout(pictureLoadTimeout);
+    element.querySelector('img').src = pictureImage.src;
+  };
+
+  pictureImage.onerror = function() {
+    element.classList.add(FAILURE_CLASS);
+  };
+
+  pictureImage.src = picture.url;
+
+  pictureLoadTimeout = setTimeout( function() {
+    pictureImage.src = '';
+    element.classList.add(FAILURE_CLASS);
+  }, IMAGE_LOAD_TIMEOUT);
+
+  return element;
+}

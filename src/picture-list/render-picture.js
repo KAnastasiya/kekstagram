@@ -80,27 +80,23 @@ function _getPictureElement(data) {
  * @constructor
  * @param  {Object}   data         Информация о картинке
  * @param  {Element}  container    Элемент, в который будет загружаться картинка
- * @param  {Object}   pictureList  Список картинок
  */
-function Photo(data, container, pictureList) {
-  // Фиксация контекста
+function Photo(data, container) {
   bindAllFunc(this);
 
   this.element = _getPictureElement(data);
-  this.index = pictureList.indexOf(data);
-  container.appendChild(this.element);
-
+  this.url = data.url;
   this.element.addEventListener('click', this._openGallery);
+
+  container.appendChild(this.element);
 }
 
 /**
  * Прототип конструктора Photo. Обработчик события нажатия на картинку
- * @param   {Object}  event  Событие, вызвавшее срабатывание обработчика
  */
 Photo.prototype._openGallery = function(event) {
-  var openPhotoInGallery = new CustomEvent( 'openPhotoInGallery', { detail: this.index } );
   event.preventDefault();
-  this.element.dispatchEvent(openPhotoInGallery);
+  window.location.hash = this.url;
 };
 
 /**

@@ -80,12 +80,13 @@ function renderPage(pictureList, pageNum, replace) {
 
   // Получение информации о каждой картинке и отрисовка картинок
   pictureList.slice(from, to).forEach(function(picture) {
-    renderedPictures.push(new Photo(picture, container, pictureList));
+    renderedPictures.push(new Photo(picture, container));
   });
   picturesContainer.appendChild(container);
 
   renderNextPageIfNeeded(pictureList);
   gallery.setGalleryPictures(pictureList);
+  gallery.changeGalleryState();
 }
 
 /**

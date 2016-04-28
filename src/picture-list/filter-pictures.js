@@ -19,11 +19,20 @@ var filters = {
 };
 
 /**
- * Фильтр, устанавливаемый по умолчанию
+ * Фильтр по-умолчанию, то есть фильтр который устанавливается, если
+ * ранее не был выбран никакой другой фильтр (в localStorage фильтр не сохранен)
  * @constant
  * @type  {String}
  */
 var DEFAULT_FILTER = filters.POPULAR;
+
+/**
+ * Свойство localStorage,в котором хранится фильтр, примененный к
+ * списку картинок
+ * @constant
+ * @type  {String}
+ */
+var PICTURES_FILTER_IN_STORAGE = 'picturesListFilter';
 
 /**
  * Период от текущей даты в прошлое (в миллисекундах), картинки за
@@ -33,43 +42,49 @@ var DEFAULT_FILTER = filters.POPULAR;
  */
 var NEW_PICTURES_DELTA = 14 * (24 * 60 * 60 * 1000);
 
-/**
- * Текущий выбранный фильтр
- * @type  {String}
- */
-var currentFilter = DEFAULT_FILTER;
-
 var filtersContainer = document.querySelector('.filters'),
-  filtersList = filtersContainer.querySelectorAll('.filters-radio');
+  filtersList = filtersContainer.querySelectorAll('.filters-radio'),
+  currentFilter;
 
 /**
  * Инициализация фильтрации
- * @param  {Object}  pictures  Список картинок для фильтрации
+ * @param  {Object}  picturesList  Список картинок для фильтрации
  */
 function initializeFiltration(picturesList) {
   _setFiltersEnabled(picturesList);
-  _setFilterEnabled(picturesList, DEFAULT_FILTER);
+  _setFilterEnabled(picturesList);
   filtersContainer.classList.remove('hidden');
 }
 
 /**
  * Обработка события нажатия на фильтры
+ * @param  {Object}  picturesList  Список картинок для фильтрации
  */
-function _setFiltersEnabled(pictureList) {
+function _setFiltersEnabled(picturesList) {
   filtersContainer.addEventListener('click', function(event) {
-    currentFilter = event.target.id;
+    _setFilterInStorage(event.target.id);
     if (event.target.classList.contains('filters-radio')) {
-      _setFilterEnabled(pictureList, currentFilter);
+      _setFilterEnabled(picturesList);
     }
   });
 }
 
 /**
  * Отрисовка отфильтрованного списка картинок
- * @param  {String}  filter  Выбранный фильтр
+ * @param  {Object}  picturesList  Список картинок для фильтрации
  */
-function _setFilterEnabled(pictureList) {
-  renderPictures.renderPage( _getFilteredPictures(pictureList, currentFilter), 0, true );
+function _setFilterEnabled(picturesList) {
+  // Определяем, какой фильтр применить. Если ранее какой-то фильр уже был
+  // выбран, то нужно применить его. В противном случае установить фильтр
+  // по умолчанию
+  if (localStorage.hasOwnProperty(PICTURES_FILTER_IN_STORAGE)) {
+    currentFilter = _getFilterFromStorage();
+  } else {
+    currentFilter = DEFAULT_FILTER;
+  }
+
+  renderPictures.renderPage( _getFilteredPictures(picturesList, currentFilter), 0, true );
+
   for (var j = 0; j < filtersList.length; j++) {
     filtersList[j].removeAttribute('checked');
   }
@@ -130,6 +145,21 @@ function _getDiscussedPictures(picturesToFilter) {
     return b.comments - a.comments;
   });
   return picturesToFilter;
+}
+
+/**
+ * Сохранение выбранного фильтра в localStorage
+ * @param  {String}  filter  Выбранный фильтр
+ */
+function _setFilterInStorage(filter) {
+  localStorage.setItem(PICTURES_FILTER_IN_STORAGE, filter);
+}
+
+/**
+ * Чтение выбранного фильтра из localStorage
+ */
+function _getFilterFromStorage() {
+  return localStorage.getItem(PICTURES_FILTER_IN_STORAGE);
 }
 
 /**

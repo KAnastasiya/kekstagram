@@ -49,23 +49,29 @@ Gallery.prototype.setGalleryPictures = function(picturesList) {
 };
 
 /**
- * Прототип конструктора Gallery. Если в адресной строке присутствует hash,
- * то галерея открывается; иначе галерея закрывается
+ * Прототип конструктора Gallery. Управление состоянием галереи:
+ * если в адресной строке присутствует hash, и он удовлетворяет
+ * заданному шаблону, то галерея показывается; иначе галерея скрывается
  */
 Gallery.prototype.changeGalleryState = function() {
   var HASH_REG_EXP = new RegExp(/#photos\/(\S+)/),
     currentHash = location.hash;
 
   if ( currentHash.match(HASH_REG_EXP) ) {
-    this._showGalleryPicture(currentHash.slice(1));
-    this.galleryContainer.classList.remove('invisible');
-    this.galleryContainer.addEventListener('click', this._closeGallery);
-    document.addEventListener('keydown', this._closeGalleryByEscape);
+    this._showGallery(currentHash);
   } else {
-    this.galleryContainer.classList.add('invisible');
-    this.galleryContainer.removeEventListener('click', this._closeGallery);
-    document.removeEventListener('keydown', this._closeGalleryByEscape);
+    this._hideGallery();
   }
+};
+
+/**
+ * Прототип конструктора Gallery. Показ галереи
+ */
+Gallery.prototype._showGallery = function(hash) {
+  this._showGalleryPicture(hash.slice(1));
+  this.galleryContainer.classList.remove('invisible');
+  this.galleryContainer.addEventListener('click', this._removeUrlHash);
+  document.addEventListener('keydown', this._removeUrlHashByEscape);
 };
 
 /**
@@ -93,17 +99,28 @@ Gallery.prototype._showNextPicture = function(event) {
 };
 
 /**
- * Прототип конструктора Gallery. Закрытие галереи
+ * Прототип конструктора Gallery. Скрытие галереи
  */
-Gallery.prototype._closeGallery = function() {
+Gallery.prototype._hideGallery = function() {
+  this.galleryContainer.classList.add('invisible');
+  this.galleryContainer.removeEventListener('click', this.removeUrlHash);
+  document.removeEventListener('keydown', this._removeUrlHashByEscape);
+};
+
+/**
+ * Прототип конструктора Gallery.Инициализация закрытия галерея путем
+ * удаления hash из адресной строки
+ */
+Gallery.prototype._removeUrlHash = function() {
   window.location.hash = '';
 };
 
 /**
- * Прототип конструктора Gallery. Обработка нажатия на клавишу Escape
+ * Прототип конструктора Gallery. Инициализация закрытия галерея по
+ * нажатию на клавишу Escape
  */
-Gallery.prototype._closeGalleryByEscape = function(event) {
+Gallery.prototype._removeUrlHashByEscape = function(event) {
   if (event.keyCode === 27) {
-    this._closeGallery();
+    this._removeHash();
   }
 };

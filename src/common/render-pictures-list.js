@@ -8,8 +8,8 @@ module.exports = {
   showLoadingError: showLoadingError
 };
 
-var Photo = require('./render-picture'),
-  Gallery = require('../gallery');
+var Photo = require('../components/Photo'),
+  Gallery = require('../components/Gallery');
 
 /**
  * Размер страницы с картинками (число картинок, помещаемых на одной странице)
@@ -33,8 +33,7 @@ var LOADING_CLASS = 'pictures-loading';
 var FAILURE_CLASS = 'pictures-failure';
 
 /**
- * Номер страницы с картинками по умолчанию. Отрисовка начинается
- * с первой (нулевой) страницы
+ * Номер страницы с картинками. Отрисовка начинается с первой (нулевой) страницы
  * @type  {Number}
  */
 var pageNumber = 0;
@@ -55,11 +54,12 @@ gallery.setGalleryPictureElements(galleryPictureElement, galleryPictureLikes, ga
 
 /**
  * Отрисовка списка картинок выбранной страницы
- * @param  {Object}   pictureList  Список картинок, полученный с сервера
- * @param  {Boolean}  replace      Признак необходимости очистки списка
- *                                 ранее отрисованных картинок
+ * @param  {Array}    pictureDataList  Список картинок, полученный с сервера
+ * @param  {Number}   pageNum          Номер страницы
+ * @param  {Boolean}  replace          Признак необходимости очистки списка
+ *                                    ранее отрисованных картинок
  */
-function renderPage(pictureList, pageNum, replace) {
+function renderPage(pictureDataList, pageNum, replace) {
   var from = pageNum * PAGE_SIZE,
     to = from + PAGE_SIZE;
 
@@ -73,15 +73,15 @@ function renderPage(pictureList, pageNum, replace) {
   // Предварительная очистка содержимого страницы. Используется при
   // отрисовке отфильтрованных списков
   if (replace) {
-    renderedPictures.forEach(function(picture) {
-      picture.remove();
+    renderedPictures.forEach(function(pictureData) {
+      pictureData.remove();
     });
     renderedPictures = [];
   }
 
   // Получение информации о каждой картинке и вставка картинок в fragment
-  pictureList.slice(from, to).forEach(function(picture) {
-    var photo = new Photo(picture);
+  pictureDataList.slice(from, to).forEach(function(pictureData) {
+    var photo = new Photo(document.querySelector('#picture-template'), pictureData);
     photo.renderTo(fragment);
     renderedPictures.push(photo);
   });
@@ -89,29 +89,29 @@ function renderPage(pictureList, pageNum, replace) {
   // Отрисовка картинок (их вставка в DOM)
   picturesContainer.appendChild(fragment);
 
-  renderNextPageIfNeeded(pictureList);
-  gallery.setGalleryPictures(pictureList);
+  renderNextPageIfNeeded(pictureDataList);
+  gallery.setGalleryPictures(pictureDataList);
   gallery.changeGalleryState();
 }
 
 /**
  * Проверка на наличие следующей страницы с картинками и на необходимость ее отрисовки
- * @param  {Object}  pictureList  Список картинок
+ * @param  {Array}  pictureDataList  Список картинок
  */
-function renderNextPageIfNeeded(pictureList) {
-  if (_isBottomReached() && _isNextPageAvailable(pictureList)) {
+function renderNextPageIfNeeded(pictureDataList) {
+  if (_isBottomReached() && _isNextPageAvailable(pictureDataList)) {
     pageNumber++;
-    renderPage(pictureList, pageNumber);
+    renderPage(pictureDataList, pageNumber);
   }
 }
 
 /**
  * Проверка на наличие страниц с картинками, следующих за текущей страницей
- * @param   {Object}   pictures  Список картинок
- * @return  {Boolean}            Признак наличия следующей страницы
+ * @param   {Array}   pictureDataList  Список картинок
+ * @return  {Boolean}                  Признак наличия следующей страницы
  */
-function _isNextPageAvailable(picturesList) {
-  return pageNumber < Math.floor(picturesList.length / PAGE_SIZE);
+function _isNextPageAvailable(pictureDataList) {
+  return pageNumber < Math.floor(pictureDataList.length / PAGE_SIZE);
 }
 
 /**

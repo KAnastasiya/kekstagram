@@ -5,7 +5,7 @@ module.exports = {
   getFilteredPicturesByCurrentFilter: getFilteredPicturesByCurrentFilter
 };
 
-var renderPictures = require('./render-pictures');
+var renderPictures = require('./render-pictures-list');
 
 /**
  * Поддерживаемые способы фильтрации
@@ -48,32 +48,32 @@ var filtersContainer = document.querySelector('.filters'),
 
 /**
  * Инициализация фильтрации
- * @param  {Object}  picturesList  Список картинок для фильтрации
+ * @param  {Array}  pictureDataList  Список картинок для фильтрации
  */
-function initializeFiltration(picturesList) {
-  _setFiltersEnabled(picturesList);
-  _setFilterEnabled(picturesList);
+function initializeFiltration(pictureDataList) {
+  _setFiltersEnabled(pictureDataList);
+  _setFilterEnabled(pictureDataList);
   filtersContainer.classList.remove('hidden');
 }
 
 /**
  * Обработка события нажатия на фильтры
- * @param  {Object}  picturesList  Список картинок для фильтрации
+ * @param  {Array}  pictureDataList  Список картинок для фильтрации
  */
-function _setFiltersEnabled(picturesList) {
+function _setFiltersEnabled(pictureDataList) {
   filtersContainer.addEventListener('click', function(event) {
     _setFilterInStorage(event.target.id);
     if (event.target.classList.contains('filters-radio')) {
-      _setFilterEnabled(picturesList);
+      _setFilterEnabled(pictureDataList);
     }
   });
 }
 
 /**
  * Отрисовка отфильтрованного списка картинок
- * @param  {Object}  picturesList  Список картинок для фильтрации
+ * @param  {Array}  pictureDataList  Список картинок для фильтрации
  */
-function _setFilterEnabled(picturesList) {
+function _setFilterEnabled(pictureDataList) {
   // Определяем, какой фильтр применить. Если ранее какой-то фильр уже был
   // выбран, то нужно применить его. В противном случае установить фильтр
   // по умолчанию
@@ -83,7 +83,7 @@ function _setFilterEnabled(picturesList) {
     currentFilter = DEFAULT_FILTER;
   }
 
-  renderPictures.renderPage( _getFilteredPictures(picturesList, currentFilter), 0, true );
+  renderPictures.renderPage( _getFilteredPictures(pictureDataList, currentFilter), 0, true );
 
   for (var j = 0; j < filtersList.length; j++) {
     filtersList[j].removeAttribute('checked');
@@ -93,12 +93,12 @@ function _setFilterEnabled(picturesList) {
 
 /**
  * Получение отфильтрованного списка картинок
- * @param   {Object}  picturesList  Исходный список картинок
- * @param   {String}  filter        Примененный фильтр
- * @return  {Object}                Отфильтрованный списк картинок
+ * @param   {Array}   pictureDataList  Список картинок для фильтрации
+ * @param   {String}  filter           Примененный фильтр
+ * @return  {Array}                   Отфильтрованный список картинок
  */
-function _getFilteredPictures(picturesList, filter) {
-  var picturesToFilter = picturesList.slice();
+function _getFilteredPictures(pictureDataList, filter) {
+  var picturesToFilter = pictureDataList.slice();
   switch (filter) {
     case filters.NEW:
       return _getNewPictures(picturesToFilter);
@@ -114,21 +114,18 @@ function _getFilteredPictures(picturesList, filter) {
  * Фильтр "Новые". Получение списка картинок, загруженных за даты, более
  * поздние, чем минимально допустимая дата; сортировка этого списка по
  * убыванию дат
- * @param   {Object}  picturesToFilter  Список картинок, полученный от сервера
- * @return  {Object}                    Отфильтрованный список картинок
+ * @param   {Array}  picturesToFilter  Список картинок для фильтрации
+ * @return  {Array}                    Отфильтрованный список картинок
  */
 function _getNewPictures(picturesToFilter) {
   var minDate = Date.now() - NEW_PICTURES_DELTA;
 
   var newPictures = picturesToFilter.filter(function(pictureData) {
-    var pictureDate = new Date(pictureData.date).getTime();
-    return pictureDate >= minDate;
+    return pictureData.getPictureDateInMs() >= minDate;
   });
 
   picturesToFilter = newPictures.sort(function(a, b) {
-    var pictureDate1 = new Date(a.date).getTime(),
-      pictureDate2 = new Date(b.date).getTime();
-    return pictureDate2 - pictureDate1;
+    return b.getPictureDateInMs() - a.getPictureDateInMs();
   });
 
   return picturesToFilter;
@@ -137,12 +134,12 @@ function _getNewPictures(picturesToFilter) {
 /**
  * Фильтр "Обсуждаемые". Сортировка картинок по убыванию количества
  * комментариев к ним
- * @param   {Object}  picturesToFilter  Список картинок, полученный от сервера
- * @return  {Object}                    Список отсортированных картинок
+ * @param   {Array}  picturesToFilter  Список картинок, полученный от сервера
+ * @return  {Array}                    Список отсортированных картинок
  */
 function _getDiscussedPictures(picturesToFilter) {
   picturesToFilter.sort(function(a, b) {
-    return b.comments - a.comments;
+    return b.getCommentsCount() - a.getCommentsCount();
   });
   return picturesToFilter;
 }
@@ -164,9 +161,9 @@ function _getFilterFromStorage() {
 
 /**
  * Получение списка картинок, отфильтрованного согласно текущего фильтра
- * @param   {Object}    picturesList  Список отфильтрованных картинок
+ * @param   {Array}     pictureDataList  Список отфильтрованных картинок
  * @return  {Function}
  */
-function getFilteredPicturesByCurrentFilter(picturesList) {
-  return _getFilteredPictures(picturesList, currentFilter);
+function getFilteredPicturesByCurrentFilter(picturesDataList) {
+  return _getFilteredPictures(picturesDataList, currentFilter);
 }

@@ -2,7 +2,7 @@
 
 module.exports = BaseComponent;
 
-var utils = require('./utils');
+var utils = require('../common/utils');
 
 /**
  * Функция-конструктор DOM-элемента, который является

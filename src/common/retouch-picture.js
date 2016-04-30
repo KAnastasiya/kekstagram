@@ -7,7 +7,7 @@ module.exports = {
 
 var uploadPicture = require('./upload-picture'),
   resizePicture = require('./resize-picture'),
-  utilities = require('./picture-process-utilities'),
+  utilities = require('./utils'),
   browserCookies = require('browser-cookies');
 
 var filterMap,

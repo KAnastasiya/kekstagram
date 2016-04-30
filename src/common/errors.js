@@ -5,7 +5,7 @@ module.exports = {
   hideErrorMessage: hideErrorMessage
 };
 
-var utilities = require('./picture-process-utilities');
+var utilities = require('./utils');
 
 /**
  * CSS-класс, стилизующий сообщения об ошибках обработки картинок

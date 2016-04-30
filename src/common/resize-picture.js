@@ -7,9 +7,9 @@ module.exports = {
 
 var uploadPicture = require('./upload-picture'),
   retouchPicture = require('./retouch-picture'),
-  utilities = require('./picture-process-utilities'),
-  errors = require('./picture-process-errors'),
-  Resizer = require('../resizer');
+  utilities = require('./utils'),
+  errors = require('./errors'),
+  Resizer = require('../components/Resizer');
 
 var currentResizer,
   resizeForm = document.forms['upload-resize'],

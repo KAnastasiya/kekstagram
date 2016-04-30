@@ -5,8 +5,8 @@ module.exports = {
 };
 
 var resizePicture = require('./resize-picture'),
-  utilities = require('./picture-process-utilities'),
-  errors = require('./picture-process-errors');
+  utilities = require('./utils'),
+  errors = require('./errors');
 
 /**
  * Поддерживаемые форматы картинок

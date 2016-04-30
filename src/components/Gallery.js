@@ -2,7 +2,8 @@
 
 module.exports = Gallery;
 
-var bindAllFunc = require('./bind-all-function');
+var BaseComponent = require('./BaseComponent'),
+  utils = require('../common/utils');
 
 /**
  * Функция-конструктор для создания галереи
@@ -10,14 +11,13 @@ var bindAllFunc = require('./bind-all-function');
  * @param  {Element}  element  DOM-элемент, в котором располагается галерея
  */
 function Gallery(element) {
-  bindAllFunc(this);
-
-  this.galleryElement = element;
+  BaseComponent.call(this, element);
   this.galleryPictures = [];
-
-  this.galleryElement.addEventListener('click', this._showNextPicture);
   window.addEventListener('hashchange', this.changeGalleryState);
 }
+
+// Наследование объектов конструктора Gallery от "главного" DOM-элемента
+utils.inherit(Gallery, BaseComponent);
 
 /**
  * Прототип конструктора Gallery. Установка DOM-элемента, в котором находится галерея
@@ -42,10 +42,10 @@ Gallery.prototype.setGalleryPictureElements = function(container, likes, comment
 
 /**
  * Прототип конструктора Gallery. Загрузка в галлерею списка картинок
- * @param  {Object}  picturesList  Список картинок
+ * @param  {Array}  pictureDataList  Список картинок
  */
-Gallery.prototype.setGalleryPictures = function(picturesList) {
-  this.galleryPictures = picturesList;
+Gallery.prototype.setGalleryPictures = function(pictureDataList) {
+  this.galleryPictures = pictureDataList;
 };
 
 /**
@@ -79,13 +79,44 @@ Gallery.prototype._showGallery = function(hash) {
  */
 Gallery.prototype._showGalleryPicture = function(hash) {
   var currentPicture = this.galleryPictures.find(function(picture) {
-    return picture.url === hash;
+    return picture.getImageUrl() === hash;
   });
 
-  this.pictureContainer.src = currentPicture.url;
-  this.pictureComments.textContent = currentPicture.comments;
-  this.pictureLikes.textContent = currentPicture.likes;
+  this.pictureContainer.src = currentPicture.getImageUrl();
   this.pictureIndex = this.galleryPictures.indexOf(currentPicture);
+  this.pictureComments.textContent = currentPicture.getCommentsCount();
+  this._changelikesIcon();
+
+  this.pictureLikes.addEventListener('click', this._changeLikesCount);
+  this.pictureContainer.addEventListener('click', this._showNextPicture, true);
+};
+
+/**
+ * Прототип конструктора Gallery. Изменение количества лайков под картинкой
+ * @param  {Object}  event  Событие
+ */
+Gallery.prototype._changeLikesCount = function(event) {
+  event.stopPropagation();
+  var updateLikesInPhoto = new CustomEvent('updateLikesInPhoto');
+  this.galleryPictures[this.pictureIndex].changeLikesCount();
+  this._changelikesIcon();
+  window.dispatchEvent(updateLikesInPhoto);
+};
+
+/**
+ * Прототип конструктора Gallery. Управление внешним видом иконки
+ */
+Gallery.prototype._changelikesIcon = function() {
+  var LIKED_ICON = 'likes-count-liked',
+    currentPictureData = this.galleryPictures[this.pictureIndex];
+
+  if ( currentPictureData.isLiked() ) {
+    this.pictureLikes.classList.add(LIKED_ICON);
+  } else {
+    this.pictureLikes.classList.remove(LIKED_ICON);
+  }
+
+  this.pictureLikes.textContent = currentPictureData.getLikesCount();
 };
 
 /**
@@ -95,7 +126,7 @@ Gallery.prototype._showGalleryPicture = function(hash) {
 Gallery.prototype._showNextPicture = function(event) {
   event.stopPropagation();
   this.pictureIndex++;
-  window.location.hash = this.galleryPictures[this.pictureIndex].url;
+  window.location.hash = this.galleryPictures[this.pictureIndex].getImageUrl();
 };
 
 /**
@@ -118,9 +149,10 @@ Gallery.prototype._removeUrlHash = function() {
 /**
  * Прототип конструктора Gallery. Инициализация закрытия галерея по
  * нажатию на клавишу Escape
+ * @param {Object}  event  Событие
  */
 Gallery.prototype._removeUrlHashByEscape = function(event) {
   if (event.keyCode === 27) {
-    this._removeHash();
+    this._removeUrlHash();
   }
 };

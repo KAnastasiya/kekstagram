@@ -47,32 +47,6 @@ function _hideResizer() {
 }
 
 /**
- * Подстановка размеров области кадрирования в поля формы кадрирования
- */
-window.addEventListener('resizerchange', function() {
-  var constraint = currentResizer.getConstraint();
-  resizeLeft.value = constraint.x;
-  resizeTop.value = constraint.y;
-  resizeSide.value = constraint.side;
-});
-
-/**
- * Обработчик изменения значений полей формы кадрирования
- */
-resizeForm.addEventListener('input', function() {
-  var errorMessage = _validateResizeForm();
-
-  if (errorMessage) {
-    errors.showErrorMessage('resizeError', errorMessage);
-    resizeSubmitButton.disabled = true;
-  } else {
-    errors.hideErrorMessage();
-    resizeSubmitButton.disabled = false;
-    currentResizer.setConstraint(+resizeLeft.value, +resizeTop.value, +resizeSide.value);
-  }
-});
-
-/**
  * Проверка формы кадрирования на корректность заполнения
  * @return  {String}  Текст сообщения об ошибке
  */
@@ -97,20 +71,59 @@ function _validateResizeForm() {
 }
 
 /**
+ * Обработчик изменения значений полей формы кадрирования
+ */
+function _onFormInput() {
+  var errorMessage = _validateResizeForm();
+
+  if (errorMessage) {
+    errors.showErrorMessage('resizeError', errorMessage);
+    resizeSubmitButton.disabled = true;
+  } else {
+    _setFormSubmitEnabled();
+    currentResizer.setConstraint(+resizeLeft.value, +resizeTop.value, +resizeSide.value);
+  }
+}
+
+/**
+ * Активация возможности отправки формы
+ */
+function _setFormSubmitEnabled() {
+  errors.hideErrorMessage();
+  resizeSubmitButton.disabled = false;
+}
+
+/**
  * Сохранение кадрирования картинки. Переход к ретушированию картинки
  */
-resizeForm.addEventListener('submit', function(event) {
+function _onFormSubmit(event) {
   event.preventDefault();
   _hideResizer();
   retouchPicture.initRetouch(currentResizer.exportImage().src);
-});
+}
 
 /**
  * Сброс кадрирования картинки. Возврат к загрузке картинки
  */
-resizeForm.addEventListener('reset', function(event) {
+function _onFormReset(event) {
   event.preventDefault();
   _hideResizer();
+  _setFormSubmitEnabled();
   uploadPicture.showUpload();
-  errors.hideErrorMessage();
-});
+}
+
+/**
+ * Подстановка размеров области кадрирования в поля формы кадрирования
+ */
+function _onResizerChange() {
+  var constraint = currentResizer.getConstraint();
+  resizeLeft.value = constraint.x;
+  resizeTop.value = constraint.y;
+  resizeSide.value = constraint.side;
+}
+
+//Навешивание обработчиков событий
+resizeForm.addEventListener('input', _onFormInput);
+resizeForm.addEventListener('submit', _onFormSubmit);
+resizeForm.addEventListener('reset', _onFormReset);
+window.addEventListener('resizerchange', _onResizerChange);

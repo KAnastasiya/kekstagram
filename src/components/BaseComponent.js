@@ -26,4 +26,5 @@ BaseComponent.prototype.renderTo = function(container) {
  */
 BaseComponent.prototype.remove = function() {
   this.element.parentNode.removeChild(this.element);
+  delete this.element;
 };

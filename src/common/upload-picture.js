@@ -41,7 +41,7 @@ function showUpload() {
  * отображается форма кадрирования с соответствующей картинкой.
  * Иначе отображается сообщение об ошибке
  */
-uploadForm.addEventListener('change', function(event) {
+function _onUploadPicture(event) {
   var element = event.target;
   if (element.id === 'upload-file') {
     if (fileRegExp.test(element.files[0].type)) {
@@ -60,4 +60,6 @@ uploadForm.addEventListener('change', function(event) {
       errors.showErrorMessage('wrongFileFormat');
     }
   }
-});
+}
+
+uploadForm.addEventListener('change', _onUploadPicture);

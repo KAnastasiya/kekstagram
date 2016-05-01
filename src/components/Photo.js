@@ -18,7 +18,7 @@ function Photo(templateElement, pictureData) {
   BaseComponent.call(this, this.element);
 
   // Обработчик события изменения лайка к картинке в галерее
-  window.addEventListener('updateLikesInPhoto', this._syncLikesCountWithGallery);
+  window.addEventListener('updateLikesInPhoto', this._onSyncLikesCountWithGallery);
 }
 
 // Наследование объектов конструктора Photo от "главного" DOM-элемента
@@ -38,6 +38,7 @@ Photo.prototype._createPictureElement = function(templateElement) {
   }
 
   this.element = pictureToClone.cloneNode(true);
+  this.likesElement = this.element.querySelector('.picture-likes');
 };
 
 /**
@@ -66,7 +67,7 @@ Photo.prototype._setPictureDataToElement = function() {
   }.bind(this), 10000);
 
   // Добавление количества комментариев и лайков
-  this.element.querySelector('.picture-likes').textContent = this.pictureData.getLikesCount();
+  this.likesElement.textContent = this.pictureData.getLikesCount();
   this.element.querySelector('.picture-comments').textContent = this.pictureData.getCommentsCount();
 };
 
@@ -77,14 +78,14 @@ Photo.prototype._setPictureDataToElement = function() {
  */
 Photo.prototype.renderTo = function(container) {
   BaseComponent.prototype.renderTo.call(this, container);
-  this.element.addEventListener('click', this._openGallery);
+  this.element.addEventListener('click', this._onOpenGallery);
 };
 
 /**
  * Прототип конструктора Photo. Обработчик события нажатия на картинку
  * @param  {Object}  event  Событие
  */
-Photo.prototype._openGallery = function(event) {
+Photo.prototype._onOpenGallery = function(event) {
   event.preventDefault();
   window.location.hash = this.pictureData.getImageUrl();
 };
@@ -94,9 +95,9 @@ Photo.prototype._openGallery = function(event) {
  * при изменении состояния лайка к картинке в галерее
  * @param  {Object}  event  Событие
  */
-Photo.prototype._syncLikesCountWithGallery = function(event) {
+Photo.prototype._onSyncLikesCountWithGallery = function(event) {
   event.stopPropagation();
-  this.element.querySelector('.picture-likes').textContent = this.pictureData.getLikesCount();
+  this.likesElement.textContent = this.pictureData.getLikesCount();
 };
 
 /**
@@ -104,6 +105,7 @@ Photo.prototype._syncLikesCountWithGallery = function(event) {
  * Удаление обработчиков событий
  */
 Photo.prototype.remove = function() {
+  this.element.removeEventListener('click', this._onOpenGallery);
+  delete this.likesElement;
   BaseComponent.prototype.remove.call(this);
-  this.element.removeEventListener('click', this._openGallery);
 };

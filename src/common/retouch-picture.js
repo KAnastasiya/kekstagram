@@ -12,6 +12,7 @@ var uploadPicture = require('./upload-picture'),
 
 var filterMap,
   filterForm = document.forms['upload-filter'],
+  filtersList = filterForm.querySelectorAll('.upload-filter-controls input'),
   filterImage = filterForm.querySelector('.filter-image-preview'),
   selectedFilter = browserCookies.get('filter') || 'none';
 
@@ -20,7 +21,12 @@ var filterMap,
  * @param  {String}  src  Путь к загруженной картинке
  */
 function initRetouch(src) {
+  for (var j = 0; j < filtersList.length; j++) {
+    filtersList[j].removeAttribute('checked');
+  }
+  filterForm.querySelector('#upload-filter-' + selectedFilter).setAttribute('checked', 'true');
   filterImage.src = src;
+  _onChangePicture();
   utilities.showElement(filterForm);
 }
 
@@ -34,7 +40,7 @@ function hideRetouch() {
 /**
  * Ретуширование картинки согласно выбранного фильтра
  */
-filterForm.addEventListener('change', function() {
+function _onChangePicture() {
   if (!filterMap) {
     // Ленивая инициализация (объект не создается, пока впервые не понадобится)
     filterMap = {
@@ -51,26 +57,31 @@ filterForm.addEventListener('change', function() {
   // Класс перезаписывается, а не обновляется через classList, потому что нужно
   // убрать предыдущий примененный класс
   filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
-});
+}
 
 /**
  * Сохранение ретуширования картинки. Сохранение в cookies выбранного фильтра.
  * Возвращает в начальное состояние - к загрузке новой картинки
  */
-filterForm.addEventListener('submit', function(event) {
+function _onSubmitForm(event) {
   event.preventDefault();
   browserCookies.set('filter', selectedFilter, {
     expires: utilities.getCookiesExpireDate().toString()
   });
   hideRetouch();
   uploadPicture.showUpload();
-});
+}
 
 /**
  * Сброс ретуширования картинки. Возврат к кадрированию картинки
  */
-filterForm.addEventListener('reset', function(event) {
+function _onResetForm(event) {
   event.preventDefault();
   hideRetouch();
   resizePicture.showResizer();
-});
+}
+
+// Навешивание обработчиков событий
+filterForm.addEventListener('change', _onChangePicture);
+filterForm.addEventListener('submit', _onSubmitForm);
+filterForm.addEventListener('reset', _onResetForm);

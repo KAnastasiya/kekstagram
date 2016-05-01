@@ -59,7 +59,7 @@ PictureData.prototype.getLikesCount = function() {
  * Прототип конструктора PictureData. Обновление количества лайков
  * при изменении состояния лайка к картинке в галерее
  */
-PictureData.prototype.changeLikesCount = function() {
+PictureData.prototype.toggleLikes = function() {
   if (this.isLiked()) {
     this._unLikePicture();
   } else {

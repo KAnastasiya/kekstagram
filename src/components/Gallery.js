@@ -13,7 +13,7 @@ var BaseComponent = require('./BaseComponent'),
 function Gallery(element) {
   BaseComponent.call(this, element);
   this.galleryPictures = [];
-  window.addEventListener('hashchange', this.changeGalleryState);
+  window.addEventListener('hashchange', this.onChangeGalleryState);
 }
 
 // Наследование объектов конструктора Gallery от "главного" DOM-элемента
@@ -53,7 +53,7 @@ Gallery.prototype.setGalleryPictures = function(pictureDataList) {
  * если в адресной строке присутствует hash, и он удовлетворяет
  * заданному шаблону, то галерея показывается; иначе галерея скрывается
  */
-Gallery.prototype.changeGalleryState = function() {
+Gallery.prototype.onChangeGalleryState = function() {
   var HASH_REG_EXP = new RegExp(/#photos\/(\S+)/),
     currentHash = location.hash;
 
@@ -70,8 +70,8 @@ Gallery.prototype.changeGalleryState = function() {
 Gallery.prototype._showGallery = function(hash) {
   this._showGalleryPicture(hash.slice(1));
   this.galleryContainer.classList.remove('invisible');
-  this.galleryContainer.addEventListener('click', this._removeUrlHash);
-  document.addEventListener('keydown', this._removeUrlHashByEscape);
+  this.galleryContainer.addEventListener('click', this._onRemoveUrlHash);
+  document.addEventListener('keydown', this._onRemoveUrlHashByEscape);
 };
 
 /**
@@ -87,18 +87,18 @@ Gallery.prototype._showGalleryPicture = function(hash) {
   this.pictureComments.textContent = currentPicture.getCommentsCount();
   this._changelikesIcon();
 
-  this.pictureLikes.addEventListener('click', this._changeLikesCount);
-  this.pictureContainer.addEventListener('click', this._showNextPicture, true);
+  this.pictureLikes.addEventListener('click', this._onChangeLikesCount);
+  this.pictureContainer.addEventListener('click', this._onShowNextPicture, true);
 };
 
 /**
  * Прототип конструктора Gallery. Изменение количества лайков под картинкой
  * @param  {Object}  event  Событие
  */
-Gallery.prototype._changeLikesCount = function(event) {
+Gallery.prototype._onChangeLikesCount = function(event) {
   event.stopPropagation();
   var updateLikesInPhoto = new CustomEvent('updateLikesInPhoto');
-  this.galleryPictures[this.pictureIndex].changeLikesCount();
+  this.galleryPictures[this.pictureIndex].toggleLikes();
   this._changelikesIcon();
   window.dispatchEvent(updateLikesInPhoto);
 };
@@ -123,7 +123,7 @@ Gallery.prototype._changelikesIcon = function() {
  * Прототип конструктора Gallery. Обработка нажатия на текущую картинку галереи
  * @param {Object}  event  Событие
  */
-Gallery.prototype._showNextPicture = function(event) {
+Gallery.prototype._onShowNextPicture = function(event) {
   event.stopPropagation();
   this.pictureIndex++;
   window.location.hash = this.galleryPictures[this.pictureIndex].getImageUrl();
@@ -134,15 +134,15 @@ Gallery.prototype._showNextPicture = function(event) {
  */
 Gallery.prototype._hideGallery = function() {
   this.galleryContainer.classList.add('invisible');
-  this.galleryContainer.removeEventListener('click', this.removeUrlHash);
-  document.removeEventListener('keydown', this._removeUrlHashByEscape);
+  this.galleryContainer.removeEventListener('click', this._onRemoveUrlHash);
+  document.removeEventListener('keydown', this._onRemoveUrlHashByEscape);
 };
 
 /**
  * Прототип конструктора Gallery.Инициализация закрытия галерея путем
  * удаления hash из адресной строки
  */
-Gallery.prototype._removeUrlHash = function() {
+Gallery.prototype._onRemoveUrlHash = function() {
   window.location.hash = '';
 };
 
@@ -151,8 +151,8 @@ Gallery.prototype._removeUrlHash = function() {
  * нажатию на клавишу Escape
  * @param {Object}  event  Событие
  */
-Gallery.prototype._removeUrlHashByEscape = function(event) {
+Gallery.prototype._onRemoveUrlHashByEscape = function(event) {
   if (event.keyCode === 27) {
-    this._removeUrlHash();
+    this._onRemoveUrlHash();
   }
 };

@@ -57,7 +57,7 @@ gallery.setGalleryPictureElements(galleryPictureElement, galleryPictureLikes, ga
  * @param  {Array}    pictureDataList  Список картинок, полученный с сервера
  * @param  {Number}   pageNum          Номер страницы
  * @param  {Boolean}  replace          Признак необходимости очистки списка
- *                                    ранее отрисованных картинок
+ *                                     ранее отрисованных картинок
  */
 function renderPage(pictureDataList, pageNum, replace) {
   var from = pageNum * PAGE_SIZE,
@@ -73,8 +73,8 @@ function renderPage(pictureDataList, pageNum, replace) {
   // Предварительная очистка содержимого страницы. Используется при
   // отрисовке отфильтрованных списков
   if (replace) {
-    renderedPictures.forEach(function(pictureData) {
-      pictureData.remove();
+    renderedPictures.forEach(function(photo) {
+      photo.remove();
     });
     renderedPictures = [];
   }
@@ -91,7 +91,7 @@ function renderPage(pictureDataList, pageNum, replace) {
 
   renderNextPageIfNeeded(pictureDataList);
   gallery.setGalleryPictures(pictureDataList);
-  gallery.changeGalleryState();
+  gallery.onChangeGalleryState();
 }
 
 /**
